@@ -1,15 +1,3 @@
-import { createBrowserRouter } from "react-router";
-import { Home } from "./pages/Home";
-import { Classes } from "./pages/Classes";
-import { Trainers } from "./pages/Trainers";
-import { MembershipPlans } from "./pages/MembershipPlans";
-import { Schedule } from "./pages/Schedule";
-import { Gallery } from "./pages/Gallery";
-import { Contact } from "./pages/Contact";
-import { Login } from "./pages/Login";
-import { Signup } from "./pages/Signup";
-import { Layout } from "./components/Layout";
-
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -26,4 +14,6 @@ export const router = createBrowserRouter([
       { path: "signup", Component: Signup },
     ],
   },
-]);
+], {
+  basename: '/EmberGym'
+});

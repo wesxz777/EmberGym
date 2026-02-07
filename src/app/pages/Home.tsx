@@ -10,8 +10,10 @@ import {
   Target,
   Zap,
   X,
+  Star,
 } from "lucide-react";
 import { motion } from "motion/react";
+import { FAQ } from "../components/FAQ";
 
 export function Home() {
   const [bmiData, setBmiData] = useState({ weight: "", height: "", unit: "metric" });
@@ -130,6 +132,50 @@ export function Home() {
             <div className="w-1 h-3 bg-orange-500 rounded-full mt-2"></div>
           </div>
         </motion.div>
+      </section>
+
+      {/* Success Stats Banner */}
+      <section className="py-12 bg-gradient-to-r from-orange-500 to-red-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0 }}
+              viewport={{ once: true }}
+            >
+              <p className="text-4xl md:text-5xl font-bold text-white mb-2">5,000+</p>
+              <p className="text-white/90 font-medium">Happy Members</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <p className="text-4xl md:text-5xl font-bold text-white mb-2">98%</p>
+              <p className="text-white/90 font-medium">Success Rate</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <p className="text-4xl md:text-5xl font-bold text-white mb-2">15+</p>
+              <p className="text-white/90 font-medium">Expert Trainers</p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <p className="text-4xl md:text-5xl font-bold text-white mb-2">24/7</p>
+              <p className="text-white/90 font-medium">Gym Access</p>
+            </motion.div>
+          </div>
+        </div>
       </section>
 
       {/* Features Section */}
@@ -319,6 +365,78 @@ export function Home() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Success <span className="text-orange-500">Stories</span>
+            </h2>
+            <p className="text-xl text-gray-400">
+              Real results from real members
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                name: "Jennifer Martinez",
+                role: "Lost 35 lbs in 6 months",
+                image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
+                rating: 5,
+                text: "Ember Gym changed my life! The trainers are incredible and truly care about your progress. Best decision I've ever made.",
+              },
+              {
+                name: "David Chen",
+                role: "Gained 20 lbs of muscle",
+                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
+                rating: 5,
+                text: "The strength training programs here are top-notch. I've achieved results I never thought possible. The community is amazing!",
+              },
+              {
+                name: "Sarah Thompson",
+                role: "Completed first marathon",
+                image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
+                rating: 5,
+                text: "From zero to marathon runner in one year! The trainers helped me every step of the way. Couldn't have done it without Ember Gym.",
+              },
+            ].map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/20 rounded-2xl p-8 hover:border-orange-500/50 transition-all"
+              >
+                <div className="flex items-center gap-4 mb-6">
+                  <img
+                    src={testimonial.image}
+                    alt={testimonial.name}
+                    className="w-16 h-16 rounded-full object-cover border-2 border-orange-500"
+                  />
+                  <div>
+                    <h3 className="font-bold text-lg">{testimonial.name}</h3>
+                    <p className="text-orange-500 text-sm">{testimonial.role}</p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-1 mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                
+                <p className="text-gray-400 leading-relaxed">{testimonial.text}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <FAQ />
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-orange-600 via-red-600 to-orange-600">

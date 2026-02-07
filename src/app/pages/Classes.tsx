@@ -13,6 +13,7 @@ interface ClassData {
   description: string;
   image: string;
   benefits: string[];
+  spotsLeft: number;
 }
 
 export function Classes() {
@@ -31,6 +32,7 @@ export function Classes() {
       description: "Dynamic vinyasa flow combining strength, flexibility, and mindfulness.",
       image: "https://images.unsplash.com/photo-1651077837628-52b3247550ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b2dhJTIwY2xhc3MlMjBzdHVkaW98ZW58MXx8fHwxNzcwMjI2NjE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Increased flexibility", "Stress relief", "Core strength"],
+      spotsLeft: 12,
     },
     {
       id: 2,
@@ -43,6 +45,7 @@ export function Classes() {
       description: "High-intensity interval training to maximize calorie burn and boost metabolism.",
       image: "https://images.unsplash.com/photo-1623208525215-a573aacb1560?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaWl0JTIwdHJhaW5pbmclMjBpbnRlbnNlfGVufDF8fHx8MTc3MDIxMjg2M3ww&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Fat burning", "Cardiovascular health", "Endurance"],
+      spotsLeft: 3,
     },
     {
       id: 3,
@@ -55,6 +58,7 @@ export function Classes() {
       description: "Build lean muscle and increase overall strength with progressive resistance training.",
       image: "https://images.unsplash.com/photo-1517963628607-235ccdd5476c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHJlbmd0aCUyMHRyYWluaW5nJTIwd2VpZ2h0bGlmdGluZ3xlbnwxfHx8fDE3NzAyNzE1MDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Muscle building", "Bone density", "Metabolism boost"],
+      spotsLeft: 8,
     },
     {
       id: 4,
@@ -67,6 +71,7 @@ export function Classes() {
       description: "High-energy cycling class with motivating music and inspiring instructors.",
       image: "https://images.unsplash.com/photo-1761971976282-b2bb051a5474?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYXJkaW8lMjBzcGlubmluZyUyMGN5Y2xpbmd8ZW58MXx8fHwxNzcwMjcxNTEwfDA&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Cardiovascular fitness", "Lower body strength", "Calorie burn"],
+      spotsLeft: 15,
     },
     {
       id: 5,
@@ -79,6 +84,7 @@ export function Classes() {
       description: "Focus on core strength, posture, and flexibility through controlled movements.",
       image: "https://images.unsplash.com/photo-1754258167836-6878c54e316c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaWxhdGVzJTIwZXhlcmNpc2V8ZW58MXx8fHwxNzcwMjI2NjE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Core stability", "Posture improvement", "Mind-body connection"],
+      spotsLeft: 5,
     },
     {
       id: 6,
@@ -91,6 +97,7 @@ export function Classes() {
       description: "Learn boxing techniques while getting an incredible full-body workout.",
       image: "https://images.unsplash.com/photo-1734191797121-de71b48ba038?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib3hpbmclMjBmaXRuZXNzJTIwdHJhaW5pbmd8ZW58MXx8fHwxNzcwMjcxNTEwfDA&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Full-body workout", "Stress relief", "Coordination"],
+      spotsLeft: 4,
     },
     {
       id: 7,
@@ -103,6 +110,7 @@ export function Classes() {
       description: "Constantly varied functional movements performed at high intensity.",
       image: "https://images.unsplash.com/photo-1467818488384-3a21f2b79959?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm9zc2ZpdCUyMHdvcmtvdXR8ZW58MXx8fHwxNzcwMjcxNTExfDA&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Functional fitness", "Community", "Overall conditioning"],
+      spotsLeft: 18,
     },
     {
       id: 8,
@@ -115,6 +123,7 @@ export function Classes() {
       description: "Dance-based cardio workout featuring Latin and international music.",
       image: "https://images.unsplash.com/photo-1759375201813-572504b6ba9e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx6dW1iYSUyMGRhbmNlJTIwZml0bmVzc3xlbnwxfHx8fDE3NzAyNzE1MTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
       benefits: ["Cardiovascular health", "Coordination", "Fun & social"],
+      spotsLeft: 20,
     },
   ];
 
@@ -256,9 +265,20 @@ export function Classes() {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                    <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+                    <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
                       {classItem.type}
                     </div>
+                    
+                    {/* Spots Remaining Indicator */}
+                    {classItem.spotsLeft <= 5 ? (
+                      <div className="absolute top-3 right-3 bg-red-600 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse">
+                        Only {classItem.spotsLeft} spots left!
+                      </div>
+                    ) : (
+                      <div className="absolute top-3 right-3 bg-green-600 px-3 py-1.5 rounded-full text-xs font-medium">
+                        {classItem.spotsLeft} spots available
+                      </div>
+                    )}
                   </div>
 
                   <div className="p-5">

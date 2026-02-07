@@ -159,21 +159,6 @@ export function Trainers() {
                     </div>
                   </div>
 
-                  {/* Specialties */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold mb-2 text-gray-300">Specialties</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {trainer.specialties.map((specialty, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-orange-500/10 text-orange-400 px-2 py-1 rounded"
-                        >
-                          {specialty}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* Certifications */}
                   <div className="mb-4">
                     <h4 className="text-sm font-semibold mb-2 text-gray-300 flex items-center gap-2">
@@ -190,6 +175,30 @@ export function Trainers() {
                         </span>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Specialization Tags */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold mb-2 text-gray-300">Specializations</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {trainer.specialties.map((specialty, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs border border-orange-500 text-orange-400 px-3 py-1.5 rounded-full font-medium"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Availability Indicator */}
+                  <div className="mb-4 flex items-center gap-2 text-sm">
+                    <div className="relative">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                    </div>
+                    <span className="text-green-400 font-medium">Available for new clients</span>
                   </div>
 
                   {/* Action Buttons */}

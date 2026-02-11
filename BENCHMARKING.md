@@ -5,7 +5,7 @@ This is an SHS academic project.
 
 ## Technical Benchmarking
 
-### Technical Stack:
+### Technological Used:
 - **Frontend Framework:** React 18 with TypeScript
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS (with custom theme)

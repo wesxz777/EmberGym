@@ -51,22 +51,22 @@ This is an SHS academic project.
 ### Website Performance:
 
 #### Strengths:
-✅ **Modern Tech Stack:** Using React 18, Vite for fast builds, TypeScript for type safety
-✅ **Animations:** Smooth Framer Motion animations with viewport detection
-✅ **Responsive Design:** Mobile-first Tailwind CSS approach
-✅ **Code Organization:** Well-structured component architecture
-✅ **Accessibility:** Using Radix UI for accessible components
-✅ **Custom Theming:** Consistent orange/red gradient brand colors
-✅ **Smooth Scrolling:** CSS smooth scroll behavior
-✅ **Custom Scrollbar:** Branded scrollbar styling
+- **Modern Tech Stack:** Using React 18, Vite for fast builds, TypeScript for type safety
+- **Animations:** Smooth Framer Motion animations with viewport detection
+- **Responsive Design:** Mobile-first Tailwind CSS approach
+- **Code Organization:** Well-structured component architecture
+- **Accessibility:** Using Radix UI for accessible components
+- **Custom Theming:** Consistent orange/red gradient brand colors
+- **Smooth Scrolling:** CSS smooth scroll behavior
+- **Custom Scrollbar:** Branded scrollbar styling
 
 #### Areas for Improvement:
-⚠️ **Image Optimization:** Using external Unsplash URLs (not optimized/cached)
-⚠️ **Performance Metrics:** No Lighthouse scores documented
-⚠️ **Loading States:** Limited loading indicators
-⚠️ **Error Handling:** Basic form validation
-⚠️ **SEO:** No meta tags or SEO optimization visible
-⚠️ **Analytics:** No performance monitoring setup
+- **Image Optimization:** Using external Unsplash URLs (not optimized/cached)
+- **Performance Metrics:** No Lighthouse scores documented
+- **Loading States:** Limited loading indicators
+- **Error Handling:** Basic form validation
+- **SEO:** No meta tags or SEO optimization visible
+- **Analytics:** No performance monitoring setup
 
 ### Competitive Analysis:
 
@@ -74,13 +74,13 @@ This is an SHS academic project.
 
 | Feature | EmberGym | Typical Gym Sites |
 |---------|----------|-------------------|
-| Modern Design | ✅ Excellent | ⚠️ Mixed |
-| Interactive Features | ✅ BMI Calculator | ⚠️ Limited |
-| Animations | ✅ Framer Motion | ❌ Often static |
-| Mobile Responsive | ✅ Yes | ⚠️ Mixed |
-| Booking System | ❌ Not implemented | ✅ Often included |
-| Member Portal | ❌ Not implemented | ⚠️ Some have |
-| Performance | ⚠️ Not measured | ⚠️ Variable |
+| Modern Design | Excellent | Mixed |
+| Interactive Features | BMI Calculator | Limited |
+| Animations | Framer Motion | Often static |
+| Mobile Responsive | Yes | Mixed |
+| Booking System | Not implemented | Often included |
+| Member Portal | Not implemented | Some have |
+| Performance | Not measured | Variable |
 
 ## Educational Aspects
 

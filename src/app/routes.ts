@@ -26,6 +26,4 @@ export const router = createHashRouter([
       { path: "signup", Component: Signup },
     ],
   },
-], {
-  basename: '/EmberGym'
-});
+]);

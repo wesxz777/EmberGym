@@ -154,10 +154,10 @@ export function Layout() {
             <div>
               <h3 className="font-semibold mb-4 text-orange-500">Contact</h3>
               <ul className="space-y-2 text-gray-400">
-                <li>123 Fitness Street</li>
-                <li>New York, NY 10001</li>
-                <li>Phone: (555) 123-4567</li>
-                <li>Email: info@embergym.com</li>
+                <li>info@embergym.ph</li>
+                <li>+63 917 123 4567</li>
+                <li>BGC, Taguig City</li>
+                <li>Metro Manila, Philippines</li>
               </ul>
             </div>
           </div>

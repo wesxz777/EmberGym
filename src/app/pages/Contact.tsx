@@ -172,23 +172,40 @@ export function Contact() {
                     <div>
                       <h3 className="font-semibold mb-1">Address</h3>
                       <p className="text-gray-400">
-                   <p className="text-gray-400">
-                                            Unit 305, Fitness Tower Building
-                                      <br />
+                        Unit 305, Fitness Tower Building
+                        <br />
                         123 Bonifacio Global City, Taguig
                         <br />
                         Metro Manila, Philippines 1634
                       </p>
+                    </div>
+                  </div>
 
-                      // Phone
+                  {/* Phone */}
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-orange-500 to-red-600 p-3 rounded-lg flex-shrink-0">
+                      <Phone className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Phone</h3>
                       <p className="text-gray-400">
                         +63 917 123 4567
                         <br />
                         (02) 8123-4567
                       </p>
+                    </div>
+                  </div>
 
-                      // Email
+                  {/* Email */}
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-orange-500 to-red-600 p-3 rounded-lg flex-shrink-0">
+                      <Mail className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-1">Email</h3>
                       <p className="text-gray-400">info@embergym.ph</p>
+                    </div>
+                  </div>
 
                   {/* Hours */}
                   <div className="flex items-start gap-4">
@@ -197,12 +214,12 @@ export function Contact() {
                     </div>
                     <div>
                       <h3 className="font-semibold mb-1">Hours</h3>
-                     <div className="text-gray-400 space-y-1">
-                      <p>Monday - Friday: 5:00 AM - 10:00 PM</p>
-                      <p>Saturday: 6:00 AM - 9:00 PM</p>
-                      <p>Sunday: 7:00 AM - 8:00 PM</p>
-                      <p className="text-orange-500 text-sm">Philippine Time (PHT, UTC+8)</p>
-                    </div>
+                      <div className="text-gray-400 space-y-1">
+                        <p>Monday - Friday: 5:00 AM - 10:00 PM</p>
+                        <p>Saturday: 6:00 AM - 9:00 PM</p>
+                        <p>Sunday: 7:00 AM - 8:00 PM</p>
+                        <p className="text-orange-500 text-sm mt-2">Philippine Time (PHT, UTC+8)</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -280,7 +297,7 @@ export function Contact() {
                           ? "border-red-500 focus:border-red-500"
                           : "border-orange-500/30 focus:border-orange-500"
                       }`}
-                      placeholder="John Doe"
+                      placeholder="Juan Dela Cruz"
                     />
                     {formErrors.name && (
                       <p className="text-red-500 text-sm mt-1">
@@ -305,7 +322,7 @@ export function Contact() {
                             ? "border-red-500 focus:border-red-500"
                             : "border-orange-500/30 focus:border-orange-500"
                         }`}
-                        placeholder="john@example.com"
+                        placeholder="juan@example.com"
                       />
                       {formErrors.email && (
                         <p className="text-red-500 text-sm mt-1">

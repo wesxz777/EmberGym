@@ -30,7 +30,7 @@ export function Classes() {
       maxParticipants: 20,
       instructor: "Sarah Johnson",
       description: "Dynamic vinyasa flow combining strength, flexibility, and mindfulness.",
-      image: "https://images.unsplash.com/photo-1651077837628-52b3247550ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b2dhJTIwY2xhc3MlMjBzdHVkaW98ZW58MXx8fHwxNzcwMjI2NjE3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      image: "https://www.verywellhealth.com/thmb/Q6T_o-J9znKVhY9SeoN2p6cTDzg=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/GettyImages-2155324511-b3e15462c6dc46e0b6060656638f04dd.jpg",
       benefits: ["Increased flexibility", "Stress relief", "Core strength"],
       spotsLeft: 12,
     },

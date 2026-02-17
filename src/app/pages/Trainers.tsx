@@ -1,94 +1,49 @@
-import { Award, Star, Instagram, Mail } from "lucide-react";
+import { Award, Star, Instagram, Mail, UserX } from "lucide-react";
 import { motion } from "motion/react";
+import { useState, useEffect } from "react";
 
 interface Trainer {
   id: number;
   name: string;
   role: string;
-  specialties: string[];
-  certifications: string[];
-  experience: string;
+  specialization: string;
+  certification: string;
+  experience_years: number;
   bio: string;
   image: string;
   rating: number;
-  clients: number;
+  total_reviews: number;
+  hourly_rate?: number;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 export function Trainers() {
-  const trainers: Trainer[] = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      role: "Yoga & Mindfulness Specialist",
-      specialties: ["Vinyasa Yoga", "Power Yoga", "Meditation", "Flexibility"],
-      certifications: ["RYT-500", "Mindfulness Coach", "Nutrition Cert"],
-      experience: "8 years",
-      bio: "Sarah brings a holistic approach to fitness, combining traditional yoga practices with modern strength training techniques.",
-      image: "https://images.unsplash.com/photo-1667890786022-83bca6c4f4c2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b2dhJTIwaW5zdHJ1Y3RvciUyMHdvbWFufGVufDF8fHx8MTc3MDI3MTYxNXww&ixlib=rb-4.1.0&q=80&w=1080",
-      rating: 4.9,
-      clients: 150,
-    },
-    {
-      id: 2,
-      name: "Mike Chen",
-      role: "HIIT & Functional Training Expert",
-      specialties: ["HIIT", "Functional Training", "Weight Loss", "Conditioning"],
-      certifications: ["NASM-CPT", "CrossFit Level 2", "TRX Certified"],
-      experience: "10 years",
-      bio: "Mike specializes in high-intensity training programs that deliver real results in minimal time.",
-      image: "https://images.unsplash.com/photo-1761258772183-6a905c8b95fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaXRuZXNzJTIwY29hY2glMjBhdGhsZXRlfGVufDF8fHx8MTc3MDI3MTYxNXww&ixlib=rb-4.1.0&q=80&w=1080",
-      rating: 5.0,
-      clients: 200,
-    },
-    {
-      id: 3,
-      name: "Alex Rodriguez",
-      role: "Strength & Bodybuilding Coach",
-      specialties: ["Powerlifting", "Bodybuilding", "Strength Training", "Nutrition"],
-      certifications: ["CSCS", "ISSA-CPT", "Sports Nutrition"],
-      experience: "12 years",
-      bio: "Alex has coached numerous athletes to championship levels and specializes in building lean muscle mass.",
-      image: "https://images.unsplash.com/photo-1758875568823-34bdf47b82dc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHJlbmd0aCUyMGNvYWNoJTIwbXVzY3VsYXJ8ZW58MXx8fHwxNzcwMjcxNjE2fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      rating: 4.8,
-      clients: 180,
-    },
-    {
-      id: 4,
-      name: "Emily Davis",
-      role: "Cardio & Cycling Instructor",
-      specialties: ["Indoor Cycling", "Cardio Training", "Endurance", "Marathon Prep"],
-      certifications: ["Spinning Certified", "ACSM-CPT", "Running Coach"],
-      experience: "7 years",
-      bio: "Emily's high-energy classes are known for their motivating music and transformative results.",
-      image: "https://images.unsplash.com/photo-1544972917-3529b113a469?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb25hbCUyMHRyYWluZXIlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NzAyNzE2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      rating: 4.9,
-      clients: 220,
-    },
-    {
-      id: 5,
-      name: "Jessica Lee",
-      role: "Pilates & Rehabilitation Specialist",
-      specialties: ["Mat Pilates", "Reformer", "Injury Prevention", "Posture Correction"],
-      certifications: ["PMA Certified", "Physical Therapy Asst", "Pre/Postnatal"],
-      experience: "9 years",
-      bio: "Jessica helps clients recover from injuries and build core strength through precision-based Pilates.",
-      image: "https://images.unsplash.com/photo-1544972917-3529b113a469?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZXJzb25hbCUyMHRyYWluZXIlMjBwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NzAyNzE2MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      rating: 4.9,
-      clients: 140,
-    },
-    {
-      id: 6,
-      name: "Marcus Stone",
-      role: "Boxing & Martial Arts Coach",
-      specialties: ["Boxing", "Kickboxing", "Self-Defense", "Combat Conditioning"],
-      certifications: ["Boxing Coach Level 2", "Muay Thai Instructor", "NASM-CPT"],
-      experience: "15 years",
-      bio: "Former professional boxer Marcus brings authentic fight training to every class.",
-      image: "https://images.unsplash.com/photo-1761258772183-6a905c8b95fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaXRuZXNzJTIwY29hY2glMjBhdGhsZXRlfGVufDF8fHx8MTc3MDI3MTYxNXww&ixlib=rb-4.1.0&q=80&w=1080",
-      rating: 5.0,
-      clients: 170,
-    },
-  ];
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchTrainers();
+  }, []);
+
+  const fetchTrainers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/trainers`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch trainers');
+      }
+      const data = await response.json();
+      setTrainers(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching trainers:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black">
@@ -112,6 +67,44 @@ export function Trainers() {
       {/* Trainers Grid */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-500 text-red-400 px-6 py-4 rounded-lg max-w-2xl mx-auto">
+              <h3 className="font-semibold mb-2">Error loading trainers</h3>
+              <p>{error}</p>
+              <p className="text-sm mt-2 text-gray-400">Make sure the backend server is running on http://localhost:3001</p>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!loading && !error && trainers.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-20"
+            >
+              <div className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/20 rounded-2xl p-12 max-w-2xl mx-auto">
+                <UserX className="w-20 h-20 text-orange-500/50 mx-auto mb-6" />
+                <h2 className="text-3xl font-bold mb-4">No Trainers Yet</h2>
+                <p className="text-gray-400 text-lg mb-6">
+                  We don't have any trainers registered at the moment. Check back soon!
+                </p>
+                <p className="text-sm text-gray-500">
+                  Trainers can be added through the admin panel or API.
+                </p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Trainers Grid */}
+          {!loading && !error && trainers.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {trainers.map((trainer, index) => (
               <motion.div
@@ -148,49 +141,49 @@ export function Trainers() {
                   <p className="text-gray-400 mb-4">{trainer.bio}</p>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-3 gap-3 mb-4">
                     <div className="bg-gradient-to-br from-gray-800 to-black border border-orange-500/20 rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-orange-500">{trainer.experience}</p>
-                      <p className="text-xs text-gray-400">Experience</p>
+                      <p className="text-2xl font-bold text-orange-500">{trainer.experience_years}</p>
+                      <p className="text-xs text-gray-400">Years</p>
                     </div>
                     <div className="bg-gradient-to-br from-gray-800 to-black border border-orange-500/20 rounded-lg p-3 text-center">
-                      <p className="text-2xl font-bold text-orange-500">{trainer.clients}+</p>
-                      <p className="text-xs text-gray-400">Clients Trained</p>
+                      <p className="text-2xl font-bold text-orange-500">{trainer.total_reviews}</p>
+                      <p className="text-xs text-gray-400">Reviews</p>
                     </div>
+                    {trainer.hourly_rate && trainer.hourly_rate > 0 && (
+                      <div className="bg-gradient-to-br from-gray-800 to-black border border-orange-500/20 rounded-lg p-3 text-center">
+                        <p className="text-2xl font-bold text-orange-500">${trainer.hourly_rate}</p>
+                        <p className="text-xs text-gray-400">/hour</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Certifications */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold mb-2 text-gray-300 flex items-center gap-2">
-                      <Award className="w-4 h-4 text-orange-500" />
-                      Certifications
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {trainer.certifications.map((cert, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-gray-800 text-gray-300 px-2 py-1 rounded"
-                        >
-                          {cert}
+                  {trainer.certification && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold mb-2 text-gray-300 flex items-center gap-2">
+                        <Award className="w-4 h-4 text-orange-500" />
+                        Certification
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-xs bg-gray-800 text-gray-300 px-3 py-1.5 rounded">
+                          {trainer.certification}
                         </span>
-                      ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Specialization Tags */}
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold mb-2 text-gray-300">Specializations</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {trainer.specialties.map((specialty, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs border border-orange-500 text-orange-400 px-3 py-1.5 rounded-full font-medium"
-                        >
-                          {specialty}
+                  {/* Specialization */}
+                  {trainer.specialization && (
+                    <div className="mb-4">
+                      <h4 className="text-sm font-semibold mb-2 text-gray-300">Specialization</h4>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-xs border border-orange-500 text-orange-400 px-3 py-1.5 rounded-full font-medium">
+                          {trainer.specialization}
                         </span>
-                      ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Availability Indicator */}
                   <div className="mb-4 flex items-center gap-2 text-sm">
@@ -217,6 +210,7 @@ export function Trainers() {
               </motion.div>
             ))}
           </div>
+          )}
         </div>
       </section>
 

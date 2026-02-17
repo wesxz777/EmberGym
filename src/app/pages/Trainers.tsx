@@ -1,6 +1,7 @@
 import { Award, Star, Instagram, Mail, UserX } from "lucide-react";
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
+import { API_URL } from "../../config/api";
 
 interface Trainer {
   id: number;
@@ -15,8 +16,6 @@ interface Trainer {
   total_reviews: number;
   hourly_rate?: number;
 }
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export function Trainers() {
   const [trainers, setTrainers] = useState<Trainer[]>([]);

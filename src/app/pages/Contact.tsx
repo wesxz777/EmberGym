@@ -297,7 +297,7 @@ export function Contact() {
                           ? "border-red-500 focus:border-red-500"
                           : "border-orange-500/30 focus:border-orange-500"
                       }`}
-                      placeholder="Juan Dela Cruz"
+                      placeholder="Wesley Xyron C. Caya"
                     />
                     {formErrors.name && (
                       <p className="text-red-500 text-sm mt-1">
@@ -309,6 +309,7 @@ export function Contact() {
                   {/* Email & Phone */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
+
                       <label className="block text-sm font-medium mb-2 text-gray-300">
                         Email *
                       </label>
@@ -322,7 +323,7 @@ export function Contact() {
                             ? "border-red-500 focus:border-red-500"
                             : "border-orange-500/30 focus:border-orange-500"
                         }`}
-                        placeholder="juan@example.com"
+                        placeholder="your@example.com"
                       />
                       {formErrors.email && (
                         <p className="text-red-500 text-sm mt-1">
@@ -345,7 +346,7 @@ export function Contact() {
                             ? "border-red-500 focus:border-red-500"
                             : "border-orange-500/30 focus:border-orange-500"
                         }`}
-                        placeholder="0917-123-4567"
+                        placeholder="(63+) XXX-XXX-XXXX"
                       />
                       {formErrors.phone && (
                         <p className="text-red-500 text-sm mt-1">

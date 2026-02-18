@@ -1,203 +1,27 @@
-
-import { useState, useEffect } from "react";
-
-const mockSchedules = [
-  {
-    id: 1,
-    className: "Yoga",
-    type: "Yoga",
-    day: "Monday",
-    time: "08:00",
-    duration: 60,
-    room: "Studio A",
-    instructor: "Sarah Johnson",
-    spotsLeft: 5,
-  },
-  {
-    id: 2,
-    className: "HIIT",
-    type: "HIIT",
-    day: "Tuesday",
-    time: "10:00",
-    duration: 45,
-    room: "Studio B",
-    instructor: "Mike Chen",
-    spotsLeft: 2,
-  },
-  // Add more mock classes as needed
-];
-
+import { useState, useEffect } from "react";useEffect(() => {
+  
 export function Schedule() {
   const [schedules, setSchedules] = useState([]);
-  const [selectedDay, setSelectedDay] = useState("All");
-  const [selectedType, setSelectedType] = useState("All");
-  const [selectedTime, setSelectedTime] = useState("All");
 
-  useEffect(() => {
-    setSchedules(mockSchedules);
-  }, []);
-
-  const days = ["All", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const types = ["All", "Yoga", "HIIT", "Strength", "Cardio", "Pilates"];
-  const times = ["All", "Morning (6-12)", "Afternoon (12-17)", "Evening (17-21)"];
-
-  const filteredSchedule = schedules.filter((item) => {
-    const dayMatch = selectedDay === "All" || item.day === selectedDay;
-    const typeMatch = selectedType === "All" || item.type === selectedType;
-
-    let timeMatch = true;
-    if (selectedTime !== "All") {
-      const hour = parseInt(item.time.split(":")[0]);
-      if (selectedTime === "Morning (6-12)") {
-        timeMatch = hour >= 6 && hour < 12;
-      } else if (selectedTime === "Afternoon (12-17)") {
-        timeMatch = hour >= 12 && hour < 17;
-      } else if (selectedTime === "Evening (17-21)") {
-        timeMatch = hour >= 17 && hour <= 21;
-      }
-    }
-    return dayMatch && typeMatch && timeMatch;
-  });
+  fetch("http://localhost:3001/api/schedules")
+    .then((res) => res.json())
+    .then((data) => setSchedules(data))
+    .catch((err) => {
+      // Optionally handle error
+      setSchedules([]);
+    });
+}, []);
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <section className="relative py-20 bg-gradient-to-b from-gray-900 to-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Class <span className="text-orange-500">Schedule</span>
-          </h1>
-          <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-            Plan your week with our comprehensive class schedule. Book your spot today!
-          </p>
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section className="sticky top-20 z-40 bg-black/95 backdrop-blur-sm border-b border-orange-500/20 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Day Filter */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-400">
-                Day of Week
-              </label>
-              <select
-                value={selectedDay}
-                onChange={(e) => setSelectedDay(e.target.value)}
-                className="w-full bg-gray-900 border border-orange-500/30 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:outline-none transition-colors"
-              >
-                {days.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Type Filter */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-400">
-                Class Type
-              </label>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full bg-gray-900 border border-orange-500/30 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:outline-none transition-colors"
-              >
-                {types.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Time Filter */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-400">
-                Time of Day
-              </label>
-              <select
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
-                className="w-full bg-gray-900 border border-orange-500/30 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:outline-none transition-colors"
-              >
-                {times.map((time) => (
-                  <option key={time} value={time}>
-                    {time}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Schedule Table */}
-      <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <p className="text-gray-400">
-              Showing {filteredSchedule.length} {filteredSchedule.length === 1 ? "class" : "classes"}
-            </p>
-          </div>
-          <div className="space-y-4">
-            {filteredSchedule.map((item) => (
-              <div
-                key={item.id}
-                className="bg-gradient-to-br from-gray-900 to-black border rounded-xl p-6 border-orange-500/20"
-              >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-bold">{item.className}</h3>
-                      <span className="bg-orange-500/20 text-orange-400 text-sm px-3 py-1 rounded-full">
-                        {item.type}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-400">
-                      <div>
-                        <span className="font-medium">Day:</span> {item.day}
-                      </div>
-                      <div>
-                        <span className="font-medium">Time:</span> {item.time} ({item.duration} min)
-                      </div>
-                      <div>
-                        <span className="font-medium">Room:</span> {item.room}
-                      </div>
-                      <div>
-                        <span className="font-medium">Instructor:</span> {item.instructor}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-orange-500">{item.spotsLeft}</p>
-                    <p className="text-xs text-gray-400">Spots Left</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {filteredSchedule.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-xl text-gray-400">
-                No classes found with the selected filters.
-              </p>
-              <button
-                onClick={() => {
-                  setSelectedDay("All");
-                  setSelectedType("All");
-                  setSelectedTime("All");
-                }}
-                className="mt-4 text-orange-500 hover:text-orange-400 font-medium"
-              >
-                Clear Filters
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
+    <div>
+      <h1>Class Schedules</h1>
+      <ul>
+        {schedules.map((schedule) => (
+          <li key={schedule.id}>
+            {schedule.className} with {schedule.trainer} on {schedule.date} at {schedule.time} ({schedule.location})
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

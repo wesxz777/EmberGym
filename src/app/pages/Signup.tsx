@@ -197,7 +197,7 @@ export function Signup() {
                         ? "border-red-500 focus:border-red-500"
                         : "border-orange-500/30 focus:border-orange-500"
                     }`}
-                    placeholder="WEsley"
+                    placeholder="Wesley"
                   />
                 </div>
                 {formErrors.firstName && (

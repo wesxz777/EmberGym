@@ -197,7 +197,7 @@ export function Signup() {
                         ? "border-red-500 focus:border-red-500"
                         : "border-orange-500/30 focus:border-orange-500"
                     }`}
-                    placeholder="John"
+                    placeholder="WEsley"
                   />
                 </div>
                 {formErrors.firstName && (
@@ -219,7 +219,7 @@ export function Signup() {
                       ? "border-red-500 focus:border-red-500"
                       : "border-orange-500/30 focus:border-orange-500"
                   }`}
-                  placeholder="Doe"
+                  placeholder="Caya"
                 />
                 {formErrors.lastName && (
                   <p className="text-red-500 text-sm mt-1">{formErrors.lastName}</p>
@@ -244,7 +244,7 @@ export function Signup() {
                       ? "border-red-500 focus:border-red-500"
                       : "border-orange-500/30 focus:border-orange-500"
                   }`}
-                  placeholder="your@email.com"
+                  placeholder="@email.com"
                 />
               </div>
               {formErrors.email && (
@@ -269,7 +269,7 @@ export function Signup() {
                       ? "border-red-500 focus:border-red-500"
                       : "border-orange-500/30 focus:border-orange-500"
                   }`}
-                  placeholder="(555) 123-4567"
+                  placeholder="(63+) XXX-XXX-XXXX"
                 />
               </div>
               {formErrors.phone && (

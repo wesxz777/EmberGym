@@ -29,7 +29,7 @@ export function Trainers() {
   const fetchTrainers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/trainers`);
+      const response = await fetch(`${API_URL}/api/trainers`);
       if (!response.ok) {
         throw new Error('Failed to fetch trainers');
       }

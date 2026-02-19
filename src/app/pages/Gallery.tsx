@@ -6,25 +6,13 @@ import Slider from "react-slick";
 export function Gallery() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const baseUrl = (import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/';
-
-  function normalizeUrl(u: string | undefined) {
-    if (!u) return u;
-    if (u.startsWith('http://') || u.startsWith('https://')) return u;
-    // if already includes baseUrl, return as-is
-    if (baseUrl !== '/' && u.startsWith(baseUrl)) return u;
-    if (u.startsWith('/')) {
-      return baseUrl.replace(/\/$/, '') + u;
-    }
-    return baseUrl + u;
-  }
 
   const transformationGallery = [
     {
       id: 1,
       name: "Wesley C.",
-      before: normalizeUrl('/images/received_1393216615124102.svg'),
-      after: normalizeUrl('/images/IMG_20251213_050239.svg'),
+      before: "/images/received_1393216615124102.svg",
+      after: "/images/IMG_20251213_050239.svg",
       duration: "6 months",
       weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",
@@ -41,8 +29,8 @@ export function Gallery() {
     {
       id: 3,
       name: "Shaun Y.",
-      before: normalizeUrl('/images/received_1393216615124102.svg'),
-      after: normalizeUrl('/images/IMG_20251213_050239.svg'),
+      before: "/images/received_1393216615124102.svg",
+      after: "/images/IMG_20251213_050239.svg",
       duration: "4 months",
       weightLost: "25 lbs",
       testimonial: "The nutrition plan combined with personal training got me results I never thought possible!",
@@ -113,13 +101,13 @@ export function Gallery() {
     fetch('/api/gallery')
       .then((res) => res.json())
       .then((data) => {
-          if (cancelled) return;
-          if (Array.isArray(data) && data.length > 0) {
-            setApiFacilityImages(
-              data.map((r: any) => ({ id: r.id, url: normalizeUrl(r.url || r.image_url || r.imageUrl), category: r.category || 'Gallery', title: r.title || r.description || '' }))
-            );
-          }
-        })
+        if (cancelled) return;
+        if (Array.isArray(data) && data.length > 0) {
+          setApiFacilityImages(
+            data.map((r: any) => ({ id: r.id, url: r.url || r.image_url || r.imageUrl, category: r.category || 'Gallery', title: r.title || r.description || '' }))
+          );
+        }
+      })
       .catch(() => {
         // ignore network errors, keep local fallback
       });

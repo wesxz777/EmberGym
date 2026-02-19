@@ -12,7 +12,7 @@ export function Gallery() {
       id: 1,
       name: "Wesley C.",
       before: "public/images/Before_Caya'.jpeg",
-      after: "public/images/After_Caya'.jpeg",
+      after: "public/images/After_Caya'.png",
       duration: "6 months",
       weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",
@@ -40,7 +40,7 @@ export function Gallery() {
   const facilityImages = [
     {
       id: 1,
-      url: "public/images/Equipment.jpg",
+      url: "public/gym/Equipment.jpg",
       category: "Equipment",
       title: "State-of-the-art Equipment",
     },

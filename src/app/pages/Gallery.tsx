@@ -1,6 +1,6 @@
 import { useState } from "react";
-import beforeLocal from "../../assets/received_1393216615124102.jpeg";
-import afterLocal from "../../assets/IMG_20251213_050239.png";
+import beforeLocal from "../../assets/received_1393216615124102.svg";
+import afterLocal from "../../assets/IMG_20251213_050239.svg";
 import { Quote, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Slider from "react-slick";
@@ -21,7 +21,7 @@ export function Gallery() {
     },
     {
       id: 2,
-      name: "Michael R.",
+      name: "Heart I.",
       before: "https://images.unsplash.com/photo-1734668484998-c943d1fcb48a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFuc2Zvcm1hdGlvbiUyMGJlZm9yZSUyMGFmdGVyJTIwZml0bmVzc3xlbnwxfHx8fDE3NzAyNzE2MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       after: "https://images.unsplash.com/photo-1626807020058-30eb4ef93c84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaXRuZXNzJTIwdHJhbnNmb3JtYXRpb24lMjBzdHJvbmd8ZW58MXx8fHwxNzcwMjcxNDQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
       duration: "9 months",
@@ -30,9 +30,9 @@ export function Gallery() {
     },
     {
       id: 3,
-      name: "Sarah K.",
-      before: "https://images.unsplash.com/photo-1734668484998-c943d1fcb48a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFuc2Zvcm1hdGlvbiUyMGJlZm9yZSUyMGFmdGVyJTIwZml0bmVzc3xlbnwxfHx8fDE3NzAyNzE2MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      after: "https://images.unsplash.com/photo-1734189605012-f03d97a4d98f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaXRuZXNzJTIwZ3ltJTIwd29ya291dCUyMGF0aGxldGV8ZW58MXx8fHwxNzcwMjA5NTE0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      name: "Shaun Y.",
+      before: beforeLocal,
+      after: afterLocal,
       duration: "4 months",
       weightLost: "25 lbs",
       testimonial: "The nutrition plan combined with personal training got me results I never thought possible!",

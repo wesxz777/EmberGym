@@ -10,11 +10,11 @@ export function Gallery() {
   const transformationGallery = [
     {
       id: 1,
-      name: "Jennifer M.",
-      before: "https://images.unsplash.com/photo-1734668484998-c943d1fcb48a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFuc2Zvcm1hdGlvbiUyMGJlZm9yZSUyMGFmdGVyJTIwZml0bmVzc3xlbnwxfHx8fDE3NzAyNzE2MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      after: "https://images.unsplash.com/photo-1620188500179-32ac33c60848?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhdGhsZXRlJTIwd29ya291dCUyMHRyYWluaW5nfGVufDF8fHx8MTc3MDI3MTcxNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      name: "Wesley C.",
+      before: "src/assets/received_1393216615124102.jpeg",
+      after: "src/assets/IMG_20251213_050239.png",
       duration: "6 months",
-      weightLost: "35 lbs",
+      weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",
     },
     {

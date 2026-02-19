@@ -308,6 +308,31 @@ app.get('/api/schedules', async (req, res) => {
   }
 });
 
+// ============= GALLERY ROUTES =============
+
+// Get public gallery images
+app.get('/api/gallery', async (req, res) => {
+  try {
+    const [rows] = await pool.query(`
+      SELECT
+        gallery_id as id,
+        title,
+        description,
+        image_url as url,
+        is_active,
+        created_at
+      FROM gallery_images
+      WHERE is_active = 1
+      ORDER BY created_at DESC
+    `);
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching gallery:', error);
+    res.status(500).json({ error: 'Failed to fetch gallery images' });
+  }
+});
+
+
 // ============= MEMBERSHIP PLANS ROUTES =============
 
 // Get all active membership plans

@@ -1,7 +1,6 @@
 
 import { Calendar, Clock, MapPin, Filter } from "lucide-react";
 import { motion } from "motion/react";
-                      </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-orange-500" />
                         <span>{item.room}</span>

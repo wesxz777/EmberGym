@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { pool, testConnection } from './db.js';
+import { pool, testConnection } from './db.js'
+
 
 dotenv.config();
 

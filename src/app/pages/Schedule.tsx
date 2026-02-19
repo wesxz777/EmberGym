@@ -25,7 +25,6 @@ import { motion } from "motion/react";
                         const [schedules, setSchedules] = useState<any[]>([]);
                         const [loading, setLoading] = useState<boolean>(true);
 
-                        // filter state
                         const [selectedDay, setSelectedDay] = useState<string>("All");
                         const [selectedType, setSelectedType] = useState<string>("All");
                         const [selectedTime, setSelectedTime] = useState<string>("All");

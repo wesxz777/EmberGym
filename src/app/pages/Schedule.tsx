@@ -256,4 +256,4 @@ interface ScheduleItem {
       </section>
     </div>
   );
-}
+

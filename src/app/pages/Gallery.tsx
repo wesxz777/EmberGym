@@ -11,8 +11,8 @@ export function Gallery() {
     {
       id: 1,
       name: "Wesley C.",
-      before: "public/images/IMG_20251213_050239.png",
-      after: "public/images/received_1393216615124102.jpeg",
+      before: "public/images/Before_Caya'.jpeg",
+      after: "public/images/After_Caya'.jpeg",
       duration: "6 months",
       weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",
@@ -40,7 +40,7 @@ export function Gallery() {
   const facilityImages = [
     {
       id: 1,
-      url: "https://images.unsplash.com/photo-1676109829011-a9f0f3e40f00?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxneW0lMjBlcXVpcG1lbnQlMjB3ZWlnaHRzfGVufDF8fHx8MTc3MDIwODUyMXww&ixlib=rb-4.1.0&q=80&w=1080",
+      url: "public/images/Equipment.jpg",
       category: "Equipment",
       title: "State-of-the-art Equipment",
     },

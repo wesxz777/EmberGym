@@ -10,7 +10,6 @@ export function Schedule() {
       .catch(() => setSchedules([]));
   }, []);
 
-  
   return (
     <div>
       <h1>Class Schedules</h1>

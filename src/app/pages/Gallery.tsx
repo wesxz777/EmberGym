@@ -12,7 +12,7 @@ export function Gallery() {
       id: 1,
       name: "Wesley C.",
       before: "public/images/Before_Caya'.jpeg",
-      after: "public/images/After_Caya'.png",
+      after: "public/images/After_Caya.png",
       duration: "6 months",
       weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",

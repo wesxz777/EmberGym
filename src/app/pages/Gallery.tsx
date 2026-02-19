@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import beforeLocal from "../../assets/received_1393216615124102.svg";
-import afterLocal from "../../assets/IMG_20251213_050239.svg";
 import { Quote, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Slider from "react-slick";
@@ -13,8 +11,8 @@ export function Gallery() {
     {
       id: 1,
       name: "Wesley C.",
-      before: beforeLocal,
-      after: afterLocal,
+      before: "/images/received_1393216615124102.svg",
+      after: "/images/IMG_20251213_050239.svg",
       duration: "6 months",
       weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",
@@ -31,8 +29,8 @@ export function Gallery() {
     {
       id: 3,
       name: "Shaun Y.",
-      before: beforeLocal,
-      after: afterLocal,
+      before: "/images/received_1393216615124102.svg",
+      after: "/images/IMG_20251213_050239.svg",
       duration: "4 months",
       weightLost: "25 lbs",
       testimonial: "The nutrition plan combined with personal training got me results I never thought possible!",

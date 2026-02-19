@@ -23,41 +23,6 @@ export function Schedule() {
     </div>
   );
 }
-
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <section className="relative py-20 bg-gradient-to-b from-gray-900 to-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <h1 className="text-5xl md:text-6xl font-bold mb-6">
-              Class <span className="text-orange-500">Schedule</span>
-            </h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Plan your week with our comprehensive class schedule. Book your spot today!
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Filters */}
-      <section className="sticky top-20 z-40 bg-black/95 backdrop-blur-sm border-b border-orange-500/20 py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-orange-500" />
-            <h3 className="font-semibold">Filter Schedule</h3>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Day Filter */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-400">
-                Day of Week
-              </label>
-              <select
-                value={selectedDay}
                 onChange={(e) => setSelectedDay(e.target.value)}
                 className="w-full bg-gray-900 border border-orange-500/30 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:outline-none transition-colors"
               >

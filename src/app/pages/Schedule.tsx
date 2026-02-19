@@ -1,17 +1,16 @@
-import { useState, useEffect } from "react";useEffect(() => {
-  
+import { useState, useEffect } from "react";
+
 export function Schedule() {
   const [schedules, setSchedules] = useState([]);
 
-  fetch("http://localhost:3001/api/schedules")
-    .then((res) => res.json())
-    .then((data) => setSchedules(data))
-    .catch((err) => {
-      // Optionally handle error
-      setSchedules([]);
-    });
-}, []);
+  useEffect(() => {
+    fetch("http://localhost:3001/api/schedules")
+      .then((res) => res.json())
+      .then((data) => setSchedules(data))
+      .catch(() => setSchedules([]));
+  }, []);
 
+  
   return (
     <div>
       <h1>Class Schedules</h1>

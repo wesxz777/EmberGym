@@ -1,28 +1,437 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Calendar, Clock, MapPin, Filter } from "lucide-react";
+import { motion } from "motion/react";
+
+interface ScheduleItem {
+  id: number;
+  className: string;
+  type: string;
+  instructor: string;
+  time: string;
+  day: string;
+  duration: number;
+  room: string;
+  spotsLeft: number;
+}
 
 export function Schedule() {
-  const [schedules, setSchedules] = useState([]);
+  const [selectedDay, setSelectedDay] = useState<string>("All");
+  const [selectedType, setSelectedType] = useState<string>("All");
+  const [selectedTime, setSelectedTime] = useState<string>("All");
 
-  useEffect(() => {
-    fetch("http://localhost:3001/api/schedules")
-      .then((res) => res.json())
-      .then((data) => setSchedules(data))
-      .catch(() => setSchedules([]));
-  }, []);
+  const scheduleData: ScheduleItem[] = [
+    // Monday
+    {
+      id: 1,
+      className: "Power Yoga Flow",
+      type: "Yoga",
+      instructor: "Sarah Johnson",
+      time: "06:00",
+      day: "Monday",
+      duration: 60,
+      room: "Studio A",
+      spotsLeft: 8,
+    },
+    {
+      id: 2,
+      className: "HIIT Blast",
+      type: "HIIT",
+      instructor: "Mike Chen",
+      time: "09:00",
+      day: "Monday",
+      duration: 45,
+      room: "Fitness Floor",
+      spotsLeft: 5,
+    },
+    {
+      id: 3,
+      className: "Cardio Cycling",
+      type: "Cardio",
+      instructor: "Emily Davis",
+      time: "12:00",
+      day: "Monday",
+      duration: 45,
+      room: "Cycling Studio",
+      spotsLeft: 12,
+    },
+    {
+      id: 4,
+      className: "Strength Builder",
+      type: "Strength",
+      instructor: "Alex Rodriguez",
+      time: "17:00",
+      day: "Monday",
+      duration: 60,
+      room: "Weight Room",
+      spotsLeft: 3,
+    },
+    {
+      id: 5,
+      className: "Core Pilates",
+      type: "Pilates",
+      instructor: "Jessica Lee",
+      time: "19:00",
+      day: "Monday",
+      duration: 50,
+      room: "Studio B",
+      spotsLeft: 10,
+    },
+    // Tuesday
+    {
+      id: 6,
+      className: "Boxing Cardio",
+      type: "Cardio",
+      instructor: "Marcus Stone",
+      time: "06:30",
+      day: "Tuesday",
+      duration: 55,
+      room: "Studio A",
+      spotsLeft: 7,
+    },
+    {
+      id: 7,
+      className: "Power Yoga Flow",
+      type: "Yoga",
+      instructor: "Sarah Johnson",
+      time: "10:00",
+      day: "Tuesday",
+      duration: 60,
+      room: "Studio B",
+      spotsLeft: 15,
+    },
+    {
+      id: 8,
+      className: "CrossFit WOD",
+      type: "HIIT",
+      instructor: "David Park",
+      time: "12:30",
+      day: "Tuesday",
+      duration: 60,
+      room: "Fitness Floor",
+      spotsLeft: 4,
+    },
+    {
+      id: 9,
+      className: "Zumba Dance Party",
+      type: "Cardio",
+      instructor: "Sofia Martinez",
+      time: "18:00",
+      day: "Tuesday",
+      duration: 45,
+      room: "Studio A",
+      spotsLeft: 20,
+    },
+    {
+      id: 10,
+      className: "Strength Builder",
+      type: "Strength",
+      instructor: "Alex Rodriguez",
+      time: "20:00",
+      day: "Tuesday",
+      duration: 60,
+      room: "Weight Room",
+      spotsLeft: 6,
+    },
+    // Wednesday
+    {
+      id: 11,
+      className: "HIIT Blast",
+      type: "HIIT",
+      instructor: "Mike Chen",
+      time: "06:00",
+      day: "Wednesday",
+      duration: 45,
+      room: "Fitness Floor",
+      spotsLeft: 8,
+    },
+    {
+      id: 12,
+      className: "Core Pilates",
+      type: "Pilates",
+      instructor: "Jessica Lee",
+      time: "09:30",
+      day: "Wednesday",
+      duration: 50,
+      room: "Studio B",
+      spotsLeft: 12,
+    },
+    {
+      id: 13,
+      className: "Cardio Cycling",
+      type: "Cardio",
+      instructor: "Emily Davis",
+      time: "12:00",
+      day: "Wednesday",
+      duration: 45,
+      room: "Cycling Studio",
+      spotsLeft: 18,
+    },
+    {
+      id: 14,
+      className: "Boxing Cardio",
+      type: "Cardio",
+      instructor: "Marcus Stone",
+      time: "17:30",
+      day: "Wednesday",
+      duration: 55,
+      room: "Studio A",
+      spotsLeft: 9,
+    },
+    {
+      id: 15,
+      className: "Power Yoga Flow",
+      type: "Yoga",
+      instructor: "Sarah Johnson",
+      time: "19:00",
+      day: "Wednesday",
+      duration: 60,
+      room: "Studio B",
+      spotsLeft: 11,
+    },
+    // Thursday
+    {
+      id: 16,
+      className: "CrossFit WOD",
+      type: "HIIT",
+      instructor: "David Park",
+      time: "06:30",
+      day: "Thursday",
+      duration: 60,
+      room: "Fitness Floor",
+      spotsLeft: 5,
+    },
+    {
+      id: 17,
+      className: "Zumba Dance Party",
+      type: "Cardio",
+      instructor: "Sofia Martinez",
+      time: "10:00",
+      day: "Thursday",
+      duration: 45,
+      room: "Studio A",
+      spotsLeft: 22,
+    },
+    {
+      id: 18,
+      className: "Strength Builder",
+      type: "Strength",
+      instructor: "Alex Rodriguez",
+      time: "12:30",
+      day: "Thursday",
+      duration: 60,
+      room: "Weight Room",
+      spotsLeft: 4,
+    },
+    {
+      id: 19,
+      className: "Core Pilates",
+      type: "Pilates",
+      instructor: "Jessica Lee",
+      time: "17:00",
+      day: "Thursday",
+      duration: 50,
+      room: "Studio B",
+      spotsLeft: 14,
+    },
+    {
+      id: 20,
+      className: "HIIT Blast",
+      type: "HIIT",
+      instructor: "Mike Chen",
+      time: "19:30",
+      day: "Thursday",
+      duration: 45,
+      room: "Fitness Floor",
+      spotsLeft: 7,
+    },
+    // Friday
+    {
+      id: 21,
+      className: "Power Yoga Flow",
+      type: "Yoga",
+      instructor: "Sarah Johnson",
+      time: "06:00",
+      day: "Friday",
+      duration: 60,
+      room: "Studio A",
+      spotsLeft: 10,
+    },
+    {
+      id: 22,
+      className: "Cardio Cycling",
+      type: "Cardio",
+      instructor: "Emily Davis",
+      time: "09:00",
+      day: "Friday",
+      duration: 45,
+      room: "Cycling Studio",
+      spotsLeft: 16,
+    },
+    {
+      id: 23,
+      className: "Boxing Cardio",
+      type: "Cardio",
+      instructor: "Marcus Stone",
+      time: "12:00",
+      day: "Friday",
+      duration: 55,
+      room: "Studio A",
+      spotsLeft: 8,
+    },
+    {
+      id: 24,
+      className: "CrossFit WOD",
+      type: "HIIT",
+      instructor: "David Park",
+      time: "17:00",
+      day: "Friday",
+      duration: 60,
+      room: "Fitness Floor",
+      spotsLeft: 6,
+    },
+    {
+      id: 25,
+      className: "Zumba Dance Party",
+      type: "Cardio",
+      instructor: "Sofia Martinez",
+      time: "19:00",
+      day: "Friday",
+      duration: 45,
+      room: "Studio A",
+      spotsLeft: 25,
+    },
+    // Saturday
+    {
+      id: 26,
+      className: "HIIT Blast",
+      type: "HIIT",
+      instructor: "Mike Chen",
+      time: "08:00",
+      day: "Saturday",
+      duration: 45,
+      room: "Fitness Floor",
+      spotsLeft: 10,
+    },
+    {
+      id: 27,
+      className: "Power Yoga Flow",
+      type: "Yoga",
+      instructor: "Sarah Johnson",
+      time: "10:00",
+      day: "Saturday",
+      duration: 60,
+      room: "Studio B",
+      spotsLeft: 15,
+    },
+    {
+      id: 28,
+      className: "Strength Builder",
+      type: "Strength",
+      instructor: "Alex Rodriguez",
+      time: "12:00",
+      day: "Saturday",
+      duration: 60,
+      room: "Weight Room",
+      spotsLeft: 5,
+    },
+    // Sunday
+    {
+      id: 29,
+      className: "Core Pilates",
+      type: "Pilates",
+      instructor: "Jessica Lee",
+      time: "09:00",
+      day: "Sunday",
+      duration: 50,
+      room: "Studio B",
+      spotsLeft: 18,
+    },
+    {
+      id: 30,
+      className: "Cardio Cycling",
+      type: "Cardio",
+      instructor: "Emily Davis",
+      time: "11:00",
+      day: "Sunday",
+      duration: 45,
+      room: "Cycling Studio",
+      spotsLeft: 20,
+    },
+  ];
+
+  const days = ["All", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const types = ["All", "Yoga", "HIIT", "Strength", "Cardio", "Pilates"];
+  const times = ["All", "Morning (6-12)", "Afternoon (12-17)", "Evening (17-21)"];
+
+  const filteredSchedule = scheduleData.filter((item) => {
+    const dayMatch = selectedDay === "All" || item.day === selectedDay;
+    const typeMatch = selectedType === "All" || item.type === selectedType;
+    
+    let timeMatch = true;
+    if (selectedTime !== "All") {
+      const hour = parseInt(item.time.split(":")[0]);
+      if (selectedTime === "Morning (6-12)") {
+        timeMatch = hour >= 6 && hour < 12;
+      } else if (selectedTime === "Afternoon (12-17)") {
+        timeMatch = hour >= 12 && hour < 17;
+      } else if (selectedTime === "Evening (17-21)") {
+        timeMatch = hour >= 17 && hour <= 21;
+      }
+    }
+    
+    return dayMatch && typeMatch && timeMatch;
+  });
+
+  // Get current time to highlight current classes
+  const now = new Date();
+  const currentDay = now.toLocaleDateString("en-US", { weekday: "long" });
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+
+  const isCurrentClass = (item: ScheduleItem) => {
+    if (item.day !== currentDay) return false;
+    const [hour, minute] = item.time.split(":").map(Number);
+    const classStart = hour * 60 + minute;
+    const classEnd = classStart + item.duration;
+    const currentTime = currentHour * 60 + currentMinute;
+    return currentTime >= classStart && currentTime < classEnd;
+  };
 
   return (
-    <div>
-      <h1>Class Schedules</h1>
-      <ul>
-        {schedules.map((schedule) => (
-          <li key={schedule.id}>
-            {schedule.className} with {schedule.trainer} on {schedule.date} at {schedule.time} ({schedule.location})
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
+    <div className="min-h-screen bg-black">
+      {/* Header */}
+      <section className="relative py-20 bg-gradient-to-b from-gray-900 to-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-5xl md:text-6xl font-bold mb-6">
+              Class <span className="text-orange-500">Schedule</span>
+            </h1>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Plan your week with our comprehensive class schedule. Book your spot today!
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Filters */}
+      <section className="sticky top-20 z-40 bg-black/95 backdrop-blur-sm border-b border-orange-500/20 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Filter className="w-5 h-5 text-orange-500" />
+            <h3 className="font-semibold">Filter Schedule</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Day Filter */}
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-400">
+                Day of Week
+              </label>
+              <select
+                value={selectedDay}
                 onChange={(e) => setSelectedDay(e.target.value)}
                 className="w-full bg-gray-900 border border-orange-500/30 rounded-lg px-4 py-2.5 focus:border-orange-500 focus:outline-none transition-colors"
               >
@@ -160,5 +569,5 @@ export function Schedule() {
         </div>
       </section>
     </div>
-
-
+  );
+}

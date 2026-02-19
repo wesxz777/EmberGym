@@ -11,8 +11,8 @@ export function Gallery() {
     {
       id: 1,
       name: "Wesley C.",
-      before: "src/assets/received_1393216615124102.jpeg",
-      after: "src/assets/IMG_20251213_050239.png",
+      before: "src/assets/src\received_1393216615124102.jpeg",
+      after: "src/assets/src\IMG_20251213_050239.png",
       duration: "6 months",
       weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",

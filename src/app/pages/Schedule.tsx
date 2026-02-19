@@ -196,5 +196,5 @@ export function Schedule() {
         </div>
       </section>
     </div>
-  );
-}
+
+

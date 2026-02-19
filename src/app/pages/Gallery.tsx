@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import beforeLocal from "../../assets/received_1393216615124102.svg";
 import afterLocal from "../../assets/IMG_20251213_050239.svg";
 import { Quote, ChevronLeft, ChevronRight, X } from "lucide-react";
@@ -96,12 +96,33 @@ export function Gallery() {
     },
   ];
 
+  const [apiFacilityImages, setApiFacilityImages] = useState<any[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/gallery')
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (Array.isArray(data) && data.length > 0) {
+          setApiFacilityImages(
+            data.map((r: any) => ({ id: r.id, url: r.url || r.image_url || r.imageUrl, category: r.category || 'Gallery', title: r.title || r.description || '' }))
+          );
+        }
+      })
+      .catch(() => {
+        // ignore network errors, keep local fallback
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   const categories = ["All", "Equipment", "Classes", "Training", "Facility"];
 
+  const sourceImages = apiFacilityImages.length ? apiFacilityImages : facilityImages;
   const filteredImages =
     selectedCategory === "All"
-      ? facilityImages
-      : facilityImages.filter((img) => img.category === selectedCategory);
+      ? sourceImages
+      : sourceImages.filter((img) => img.category === selectedCategory);
 
   const sliderSettings = {
     dots: true,

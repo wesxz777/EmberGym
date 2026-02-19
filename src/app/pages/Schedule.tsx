@@ -25,45 +25,6 @@ export function Schedule() {
   );
 }
 
-  const days = ["All", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const types = ["All", "Yoga", "HIIT", "Strength", "Cardio", "Pilates"];
-  const times = ["All", "Morning (6-12)", "Afternoon (12-17)", "Evening (17-21)"];
-
-  const filteredSchedule = scheduleData.filter((item) => {
-    const dayMatch = selectedDay === "All" || item.day === selectedDay;
-    const typeMatch = selectedType === "All" || item.type === selectedType;
-    
-    let timeMatch = true;
-    if (selectedTime !== "All") {
-      const hour = parseInt(item.time.split(":")[0]);
-      if (selectedTime === "Morning (6-12)") {
-        timeMatch = hour >= 6 && hour < 12;
-      } else if (selectedTime === "Afternoon (12-17)") {
-        timeMatch = hour >= 12 && hour < 17;
-      } else if (selectedTime === "Evening (17-21)") {
-        timeMatch = hour >= 17 && hour <= 21;
-      }
-    }
-    
-    return dayMatch && typeMatch && timeMatch;
-  });
-
-  // Get current time to highlight current classes
-  const now = new Date();
-  const currentDay = now.toLocaleDateString("en-US", { weekday: "long" });
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-
-  const isCurrentClass = (item: ScheduleItem) => {
-    if (item.day !== currentDay) return false;
-    const [hour, minute] = item.time.split(":").map(Number);
-    const classStart = hour * 60 + minute;
-    const classEnd = classStart + item.duration;
-    const currentTime = currentHour * 60 + currentMinute;
-    return currentTime >= classStart && currentTime < classEnd;
-  };
-
-  return (
     <div className="min-h-screen bg-black">
       {/* Header */}
       <section className="relative py-20 bg-gradient-to-b from-gray-900 to-black">

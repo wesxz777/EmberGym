@@ -11,7 +11,7 @@ export function Gallery() {
     {
       id: 1,
       name: "Wesley C.",
-      before: "/EmberGym/images/received_1393216615124102.svg",
+      before: "public/images/IMG_20251213_050239.png",
       after: "/EmberGym/images/IMG_20251213_050239.svg",
       duration: "6 months",
       weightLost: "10 lbs",

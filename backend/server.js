@@ -260,7 +260,7 @@ app.get('/api/classes/:id', async (req, res) => {
 // Get all schedules with class and trainer info
 app.get('/api/schedule', async (req, res) => {
   try {
-    const [schedule] = await pool.query('SELECT * FROM schedule');
+    const [schedule] = await pool.query('SELECT * FROM schedule'); // Adjust table name if different
     res.json(schedule);
   } catch (error) {
     console.error('Error fetching schedule:', error);
@@ -268,8 +268,15 @@ app.get('/api/schedule', async (req, res) => {
   }
 });
 
+// Add API route to add schedule data
 app.post('/api/schedule', async (req, res) => {
   const { className, trainerId, startTime, endTime } = req.body;
+
+  // Basic validation
+  if (!className || !trainerId || !startTime || !endTime) {
+    return res.status(400).json({ error: 'All fields are required: className, trainerId, startTime, endTime.' });
+  }
+
   try {
     const [result] = await pool.query(
       'INSERT INTO schedule (class_name, trainer_id, start_time, end_time) VALUES (?, ?, ?, ?)',
@@ -281,7 +288,6 @@ app.post('/api/schedule', async (req, res) => {
     res.status(500).json({ error: 'Failed to add schedule' });
   }
 });
-
 // ============= GALLERY ROUTES =============
 
 // Get public gallery images

@@ -58,8 +58,8 @@ export function Gallery() {
     },
     {
       id: 4,
-      url: "public/TrainingImg/BoxingTraining.jpg",
-      category: "Training",
+      url: "public/ClassesImg/BoxingTraining.jpg",
+      category: "Classes",
       title: "Boxing Area",
     },
     {
@@ -76,9 +76,9 @@ export function Gallery() {
     },
     {
       id: 7,
-      url: "public/FacilityImg/Entrance.jpg",
-      category: "Facility",
-      title: "Entrance",
+      url: "public/ClassesImg/ZumbaDance.jpg",
+      category: "Classes",
+      title: "Zumba Dance Studio",
     },
     {
       id: 8,
@@ -90,7 +90,7 @@ export function Gallery() {
       id: 9,
       url: "public/FacilityImg/Reception.jpg",
       category: "Facility",
-      title: "Reception Area",
+      title: "Entrance Reception Area",
     },
   ];
 

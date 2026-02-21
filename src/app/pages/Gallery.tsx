@@ -40,26 +40,26 @@ export function Gallery() {
   const facilityImages = [
     {
       id: 1,
-      url: "public/Equipment/Equipment.jpg",
+      url: "public/EquipmentImg/Equipment.jpg",
       category: "Equipment",
       title: "Barbell Rack and Free Weights",
     },
     {
       id: 2,
-      url: "public/Equipment/Equipment2.jpg",
+      url: "public/EquipmentImg/Equipment2.jpg",
       category: "Equipment",
       title: "Dumbbell Rack",
     },
     {
       id: 3,
-      url: "public/Equipment/Equipment3.jpg",
+      url: "public/EquipmentImg/Equipment3.jpg",
       category: "Equipment",
       title: "Lat Pulldown Machine",
     },
     {
       id: 4,
-      url: "public/ClassesImg/BoxingTraining.jpg",
-      category: "Classes",
+      url: "public/TrainingImg/BoxingTraining.jpg",
+      category: "Training",
       title: "Boxing Area",
     },
     {
@@ -88,9 +88,9 @@ export function Gallery() {
     },
     {
       id: 9,
-      url: "https://images.unsplash.com/photo-1765728617805-b9f22d64e5b3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxneW0lMjB0cmFpbmluZyUyMGVxdWlwbWVudCUyMG1vZGVybnxlbnwxfHx8fDE3NzAyNzE0NDV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      category: "Equipment",
-      title: "Cardio Section",
+      url: "public/FacilityImg/Reception.jpg",
+      category: "Facility",
+      title: "Reception Area",
     },
   ];
 

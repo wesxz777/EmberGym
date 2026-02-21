@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { pool, testConnection } from './db.js'
+import axios from 'axios';
+
 
 
 dotenv.config();
@@ -256,55 +258,27 @@ app.get('/api/classes/:id', async (req, res) => {
 // ============= SCHEDULES ROUTES =============
 
 // Get all schedules with class and trainer info
-app.get('/api/schedules', async (req, res) => {
+app.get('/api/schedule', async (req, res) => {
   try {
-    const { day, trainer_id, class_id } = req.query;
-    
-    let query = `
-      SELECT 
-        s.schedule_id as id,
-        s.class_id,
-        s.trainer_id,
-        s.day_of_week,
-        s.start_time,
-        s.end_time,
-        s.room_location,
-        s.spots_available,
-        c.class_name,
-        c.class_type,
-        c.duration_minutes,
-        c.intensity,
-        c.image_url as class_image,
-        CONCAT(u.first_name, ' ', u.last_name) as trainer_name,
-        u.profile_image as trainer_image
-      FROM schedules s
-      LEFT JOIN classes c ON s.class_id = c.class_id
-      LEFT JOIN trainers t ON s.trainer_id = t.trainer_id
-      LEFT JOIN users u ON t.user_id = u.user_id
-      WHERE s.is_active = 1
-    `;
-    
-    const params = [];
-    if (day) {
-      query += ' AND s.day_of_week = ?';
-      params.push(day);
-    }
-    if (trainer_id) {
-      query += ' AND s.trainer_id = ?';
-      params.push(trainer_id);
-    }
-    if (class_id) {
-      query += ' AND s.class_id = ?';
-      params.push(class_id);
-    }
-    
-    query += ' ORDER BY FIELD(s.day_of_week, "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"), s.start_time';
-    
-    const [rows] = await pool.query(query, params);
-    res.json(rows);
+    const [schedule] = await pool.query('SELECT * FROM schedule');
+    res.json(schedule);
   } catch (error) {
-    console.error('Error fetching schedules:', error);
-    res.status(500).json({ error: 'Failed to fetch schedules' });
+    console.error('Error fetching schedule:', error);
+    res.status(500).json({ error: 'Failed to fetch the schedule' });
+  }
+});
+
+app.post('/api/schedule', async (req, res) => {
+  const { className, trainerId, startTime, endTime } = req.body;
+  try {
+    const [result] = await pool.query(
+      'INSERT INTO schedule (class_name, trainer_id, start_time, end_time) VALUES (?, ?, ?, ?)',
+      [className, trainerId, startTime, endTime]
+    );
+    res.status(201).json({ id: result.insertId });
+  } catch (error) {
+    console.error('Error adding schedule:', error);
+    res.status(500).json({ error: 'Failed to add schedule' });
   }
 });
 
@@ -548,6 +522,7 @@ app.get('/api/reviews', async (req, res) => {
 
 // ============= STATISTICS ROUTES =============
 
+
 // Get dashboard statistics
 app.get('/api/stats', async (req, res) => {
   try {
@@ -579,3 +554,21 @@ app.listen(PORT, () => {
   console.log(`📊 API endpoints available at http://localhost:${PORT}/api`);
   console.log(`💾 Database: embergym_db`);
 });
+
+
+const API_BASE = 'http://localhost:3001/api';
+
+export const fetchSchedule = async () => {
+  const response = await axios.get(`${API_BASE}/schedule`);
+  return response.data;
+};
+
+export const addSchedule = async (scheduleData: {
+  className: string;
+  trainerId: number;
+  startTime: string;
+  endTime: string;
+}) => {
+  const response = await axios.post(`${API_BASE}/schedule`, scheduleData);
+  return response.data;
+};

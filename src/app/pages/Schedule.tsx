@@ -15,7 +15,7 @@ import { Link } from "react-router";
 import { AuthGate } from "../components/AuthGate";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
-import { SCHEDULE } from "../Data/gymData";
+import { SCHEDULE } from "../data/gymData";
 
 export function Schedule() {
   const { isLoggedIn } = useAuth();

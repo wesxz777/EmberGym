@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
-import { Dumbbell, Menu, X, LogIn, LogOut, User, Lock, CreditCard } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User, Lock, CreditCard } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { ProfileModal, ProfileTab } from "./ProfileModal";
@@ -65,9 +65,9 @@ export function Layout() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="bg-gradient-to-br from-orange-500 to-red-600 p-2 rounded-lg group-hover:scale-110 transition-transform">
-                <Dumbbell className="w-6 h-6" />
+            <Link to="/" className="flex items-center gap-0 group">
+              <div className="group-hover:scale-110 transition-transform">
+                <img src="/LogoImg/emberGymLogo.png" alt="Ember Gym" className="h-23 w-auto" />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                 EMBER GYM
@@ -309,9 +309,7 @@ export function Layout() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="bg-gradient-to-br from-orange-500 to-red-600 p-2 rounded-lg">
-                  <Dumbbell className="w-6 h-6" />
-                </div>
+                <img src="/LogoImg/emberGymLogo.png" alt="Ember Gym" className="h-8 w-auto" />
                 <span className="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
                   EMBER GYM
                 </span>

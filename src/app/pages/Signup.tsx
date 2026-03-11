@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Mail, Lock, Eye, EyeOff, User, Phone, Dumbbell, CheckCircle } from "lucide-react";
 import { motion } from "motion/react";
+import axios from "axios";
 
 export function Signup() {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ export function Signup() {
     agreeToTerms: false,
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -76,14 +79,43 @@ export function Signup() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // In a real app, you would create account with a backend
-      console.log("Signup attempt:", formData);
-      // Redirect to home page after successful signup
-      navigate("/");
+      setIsLoading(true);
+      setFormErrors({}); 
+
+      try {
+        const payload = {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          password: formData.password,
+          password_confirmation: formData.confirmPassword,
+        };
+
+        // Send data to Laravel database
+       const response = await axios.post("http://localhost:8000/api/register", payload, {
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }
+      });
+        // If successful, show an alert and go to LOGIN
+        if (response.status === 201 || response.status === 200) {
+          alert("Account created successfully in the database!");
+          navigate("/login"); 
+        }
+        
+      } catch (error: any) {
+        // ... error handling
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -244,7 +276,7 @@ export function Signup() {
                       ? "border-red-500 focus:border-red-500"
                       : "border-orange-500/30 focus:border-orange-500"
                   }`}
-                  placeholder="@email.com"
+                  placeholder="your@email.com"
                 />
               </div>
               {formErrors.email && (
@@ -252,7 +284,7 @@ export function Signup() {
               )}
             </div>
 
-            {/* Phone */}
+            {/* (63+) XXX-XXX-XXXX */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-300">
                 Phone Number

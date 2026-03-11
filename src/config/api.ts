@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 // API Configuration
 // This file determines which backend URL to use based on the environment
 

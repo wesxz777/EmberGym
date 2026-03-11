@@ -2,8 +2,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Mail, Lock, Eye, EyeOff, LogIn, Dumbbell } from "lucide-react";
 import { motion } from "motion/react";
+import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 
 export function Login() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -12,6 +15,7 @@ export function Login() {
     rememberMe: false,
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(false); 
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -35,14 +39,61 @@ export function Login() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // In a real app, you would authenticate with a backend
-      console.log("Login attempt:", formData);
-      // Redirect to home page after successful login
-      navigate("/");
+      setIsLoading(true);
+      setFormErrors({}); // Clear old errors
+
+      try {
+        const payload = {
+          email: formData.email,
+          password: formData.password,
+          // Convert camelCase to snake_case for Laravel
+          remember_me: formData.rememberMe, 
+        };
+
+        // Send login data to Laravel
+        const response = await axios.post("http://127.0.0.1:8000/api/login", payload, {
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          }
+        });
+
+        if (response.status === 200) {
+          // 1. Grab the VIP Badge (Token) from Laravel
+          const token = response.data.token;
+          const user = response.data.user;
+          login({
+            firstName: user.first_name,
+            lastName: user.last_name,
+            email: user.email,
+            phone: user.phone,
+            membership: user.membership,
+          });
+          // 2. Save the badge in the browser's local storage so they stay logged in
+          localStorage.setItem("token", token);
+          localStorage.setItem("user", JSON.stringify(user));
+
+          // 3. Success! Send them to the home page
+          alert(`Welcome back, ${user.first_name}!`);
+          navigate("/");
+        }
+      } catch (error: any) {
+        // Handle incorrect email/password (401 Unauthorized) or validation errors (422)
+        if (error.response?.status === 401 || error.response?.status === 422) {
+          setFormErrors({
+            email: "Invalid email or password. Please try again.",
+          });
+        } else {
+          console.error("Login failed:", error);
+          alert("Database connection failed. Is your Laravel server running?");
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -204,10 +255,11 @@ export function Login() {
             {/* Submit Button */}
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-3.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/50 transition-all"
             >
               <LogIn className="w-5 h-5" />
-              Sign In
+              {isLoading ? "Checking Details..." : "Sign In"}
             </button>
 
             {/* Divider */}

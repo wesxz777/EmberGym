@@ -23,37 +23,11 @@ export function MembershipPlans() {
     seconds: 0,
   });
 
-  // Countdown timer for limited time offer (ends in 3 days from now)
-  useEffect(() => {
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + 3);
-    targetDate.setHours(23, 59, 59, 999);
-
-    const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = targetDate.getTime() - now;
-
-      if (distance < 0) {
-        clearInterval(timer);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      } else {
-        setTimeLeft({
-          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-          seconds: Math.floor((distance % (1000 * 60)) / 1000),
-        });
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   const plans: Plan[] = [
     {
       id: 1,
       name: "Basic",
-      price: 29,
+      price: 999,
       period: "month",
       icon: Zap,
       features: [
@@ -64,14 +38,13 @@ export function MembershipPlans() {
         { text: "Nutritional guidance", included: false },
         { text: "Free guest passes", included: false },
         { text: "24/7 gym access", included: false },
-        { text: "Sauna & spa access", included: false },
       ],
       buttonText: "Get Started",
     },
     {
       id: 2,
       name: "Pro",
-      price: 59,
+      price: 1499,
       period: "month",
       popular: true,
       icon: Star,
@@ -83,14 +56,13 @@ export function MembershipPlans() {
         { text: "Nutritional guidance", included: true },
         { text: "2 free guest passes per month", included: true },
         { text: "24/7 gym access", included: false },
-        { text: "Sauna & spa access", included: false },
       ],
       buttonText: "Most Popular",
     },
     {
       id: 3,
       name: "Elite",
-      price: 99,
+      price: 1999,
       period: "month",
       icon: Crown,
       features: [
@@ -101,7 +73,6 @@ export function MembershipPlans() {
         { text: "Nutritional guidance", included: true },
         { text: "Unlimited guest passes", included: true },
         { text: "24/7 gym access", included: true },
-        { text: "Sauna & spa access", included: true },
       ],
       buttonText: "Go Premium",
     },
@@ -115,9 +86,7 @@ export function MembershipPlans() {
     "Nutrition Plan",
     "Guest Passes",
     "24/7 Access",
-    "Spa & Sauna",
     "Priority Support",
-    "Towel Service",
     "Free Smoothie Bar",
   ];
 
@@ -143,39 +112,6 @@ export function MembershipPlans() {
               Choose the perfect plan to achieve your fitness goals. Cancel anytime, no contracts.
             </p>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Limited Time Offer Banner */}
-      <section className="py-8 bg-gradient-to-r from-orange-600 via-red-600 to-orange-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 animate-pulse" />
-              <div>
-                <h3 className="text-xl font-bold">Limited Time Offer!</h3>
-                <p className="text-white/90">Get 50% off your first month on any plan</p>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              {[
-                { label: "Days", value: timeLeft.days },
-                { label: "Hours", value: timeLeft.hours },
-                { label: "Minutes", value: timeLeft.minutes },
-                { label: "Seconds", value: timeLeft.seconds },
-              ].map((unit) => (
-                <div
-                  key={unit.label}
-                  className="bg-black/30 backdrop-blur-sm px-4 py-3 rounded-lg text-center min-w-[70px]"
-                >
-                  <div className="text-3xl font-bold">
-                    {unit.value.toString().padStart(2, "0")}
-                  </div>
-                  <div className="text-xs text-white/80">{unit.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -218,12 +154,12 @@ export function MembershipPlans() {
                     <div className="mb-6">
                       <div className="flex items-baseline gap-2">
                         <span className="text-5xl font-bold text-orange-500">
-                          ${plan.price}
+                          ₱{plan.price}
                         </span>
                         <span className="text-gray-400">/{plan.period}</span>
                       </div>
                       <p className="text-sm text-gray-500 mt-1">
-                        First month 50% off: ${Math.floor(plan.price / 2)}
+                        First month 50% off: ₱{Math.floor(plan.price / 2)}
                       </p>
                     </div>
 
@@ -318,35 +254,6 @@ export function MembershipPlans() {
                 </tbody>
               </table>
             </div>
-          </div>
-
-          {/* Progress Bars Animation for Membership Features */}
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { label: "Class Variety", value: 85 },
-              { label: "Equipment Quality", value: 95 },
-              { label: "Member Satisfaction", value: 98 },
-            ].map((item, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/20 rounded-xl p-6"
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <span className="font-semibold">{item.label}</span>
-                  <span className="text-orange-500 font-bold">{item.value}%</span>
-                </div>
-                <Progress.Root className="relative overflow-hidden bg-gray-800 rounded-full h-3">
-                  <Progress.Indicator
-                    className="bg-gradient-to-r from-orange-500 to-red-600 h-full transition-all duration-1000 ease-out"
-                    style={{ width: `${item.value}%` }}
-                  />
-                </Progress.Root>
-              </motion.div>
-            ))}
           </div>
         </div>
       </section>

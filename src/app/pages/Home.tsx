@@ -10,12 +10,19 @@ import {
   Target,
   Zap,
   X,
-  Star,
+  Flame,
+  ChevronRight,
+  MapPin,
+  Check,
+  BookOpen,
 } from "lucide-react";
-import { motion } from "motion/react";
-import { FAQ } from "../components/FAQ";
+import { motion, AnimatePresence } from "motion/react";
+import { useAuth } from "../context/AuthContext";
+import { useBookings } from "../context/BookingContext";
 
 export function Home() {
+  const { isLoggedIn, user } = useAuth();
+  const { bookings, removeBooking } = useBookings();
   const [bmiData, setBmiData] = useState({ weight: "", height: "", unit: "metric" });
   const [bmiResult, setBmiResult] = useState<{
     bmi: number;
@@ -75,12 +82,183 @@ export function Home() {
 
   return (
     <div>
+      {/* Welcome Back Banner — shown only when logged in */}
+      {isLoggedIn && user && (
+        <motion.section
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-red-600 to-orange-500 py-10"
+        >
+          {/* Decorative flame blobs */}
+          <div className="absolute -top-10 -left-10 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              {/* Greeting */}
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/50 flex items-center justify-center shrink-0">
+                  <span className="text-2xl font-bold text-white">
+                    {user.firstName[0]}{user.lastName ? user.lastName[0] : ""}
+                  </span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Flame className="w-5 h-5 text-white/80" />
+                    <span className="text-white/80 text-sm font-medium uppercase tracking-wider">Welcome Back</span>
+                  </div>
+                  <h2 className="text-3xl md:text-4xl font-bold text-white">
+                    {user.firstName} {user.lastName}! 💪
+                  </h2>
+                  <p className="text-white/80 mt-1">Ready to crush your goals today? Let's get moving!</p>
+                </div>
+              </div>
+
+              {/* Quick-action cards */}
+              <div className="flex flex-wrap gap-3 justify-center md:justify-end">
+                {[
+                  { icon: Calendar, label: "My Schedule", to: "/schedule" },
+                  { icon: Dumbbell, label: "Classes", to: "/classes" },
+                  { icon: Target, label: "Membership", to: "/membership" },
+                ].map(({ icon: Icon, label, to }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-sm px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-all hover:shadow-lg group"
+                  >
+                    <Icon className="w-4 h-4" />
+                    {label}
+                    <ChevronRight className="w-3 h-3 opacity-60 group-hover:translate-x-0.5 transition-transform" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Progress row */}
+            <div className="mt-6 grid grid-cols-3 gap-4 border-t border-white/20 pt-6">
+              {[
+                { icon: Clock, label: "Booked This Week", value: String(bookings.length) },
+                { icon: Award, label: "Member Since", value: "2026" },
+              ].map(({ icon: Icon, label, value }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2 rounded-lg">
+                    <Icon className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-white font-bold">{value}</p>
+                    <p className="text-white/70 text-xs">{label}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+      )}
+
+      {/* ── MY SCHEDULE (logged-in only) ─────────────────────────────── */}
+      {isLoggedIn && (
+        <section className="bg-gray-950 border-b border-orange-500/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-br from-orange-500 to-red-600 p-2 rounded-lg">
+                  <BookOpen className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="font-bold text-white text-lg">My Schedule</h2>
+                  <p className="text-gray-500 text-xs">
+                    {bookings.length === 0
+                      ? "No classes booked yet this week"
+                      : `${bookings.length} class${bookings.length > 1 ? "es" : ""} booked this week`}
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/schedule"
+                className="text-sm text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-1"
+              >
+                View Full Schedule <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <AnimatePresence mode="popLayout">
+              {bookings.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex flex-col items-center justify-center py-10 border border-dashed border-gray-800 rounded-2xl"
+                >
+                  <Calendar className="w-10 h-10 text-gray-700 mb-3" />
+                  <p className="text-gray-500 text-sm mb-3">You haven't booked any classes yet.</p>
+                  <Link
+                    to="/classes"
+                    className="bg-gradient-to-r from-orange-500 to-red-600 px-5 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all"
+                  >
+                    Browse Classes
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="list"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+                >
+                  {bookings.map((booking) => (
+                    <motion.div
+                      key={booking.bookingId}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.2 }}
+                      className="bg-gray-900 border border-green-500/20 rounded-xl p-4 flex gap-3 group"
+                    >
+                      {/* Check icon */}
+                      <div className="bg-green-500/15 border border-green-500/25 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                        <Check className="w-4 h-4 text-green-400" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-white text-sm truncate">{booking.className}</p>
+                        <div className="flex items-center gap-2 text-xs text-gray-400 mt-1 flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3 text-orange-500" />{booking.day}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-orange-500" />{booking.time}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-orange-500" />{booking.room}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-full">
+                            {booking.type}
+                          </span>
+                          <button
+                            onClick={() => removeBooking(booking.bookingId)}
+                            className="text-xs text-gray-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </section>
+      )}
+
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1734189605012-f03d97a4d98f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaXRuZXNzJTIwZ3ltJTIwd29ya291dCUyMGF0aGxldGV8ZW58MXx8fHwxNzcwMjA5NTE0fDA&ixlib=rb-4.1.0&q=80&w=1080"
+            src="public/TrainingImg/CardioTraining.jpg"
             alt="Fitness gym"
             className="w-full h-full object-cover"
           />
@@ -132,50 +310,6 @@ export function Home() {
             <div className="w-1 h-3 bg-orange-500 rounded-full mt-2"></div>
           </div>
         </motion.div>
-      </section>
-
-      {/* Success Stats Banner */}
-      <section className="py-12 bg-gradient-to-r from-orange-500 to-red-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-4xl md:text-5xl font-bold text-white mb-2">5,000+</p>
-              <p className="text-white/90 font-medium">Happy Members</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-4xl md:text-5xl font-bold text-white mb-2">98%</p>
-              <p className="text-white/90 font-medium">Success Rate</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-4xl md:text-5xl font-bold text-white mb-2">15+</p>
-              <p className="text-white/90 font-medium">Expert Trainers</p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              viewport={{ once: true }}
-            >
-              <p className="text-4xl md:text-5xl font-bold text-white mb-2">24/7</p>
-              <p className="text-white/90 font-medium">Gym Access</p>
-            </motion.div>
-          </div>
-        </div>
       </section>
 
       {/* Features Section */}
@@ -365,78 +499,6 @@ export function Home() {
           </div>
         </div>
       </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 bg-black">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Success <span className="text-orange-500">Stories</span>
-            </h2>
-            <p className="text-xl text-gray-400">
-              Real results from real members
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Jennifer Martinez",
-                role: "Lost 35 lbs in 6 months",
-                image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150",
-                rating: 5,
-                text: "Ember Gym changed my life! The trainers are incredible and truly care about your progress. Best decision I've ever made.",
-              },
-              {
-                name: "David Chen",
-                role: "Gained 20 lbs of muscle",
-                image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150",
-                rating: 5,
-                text: "The strength training programs here are top-notch. I've achieved results I never thought possible. The community is amazing!",
-              },
-              {
-                name: "Sarah Thompson",
-                role: "Completed first marathon",
-                image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150",
-                rating: 5,
-                text: "From zero to marathon runner in one year! The trainers helped me every step of the way. Couldn't have done it without Ember Gym.",
-              },
-            ].map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/20 rounded-2xl p-8 hover:border-orange-500/50 transition-all"
-              >
-                <div className="flex items-center gap-4 mb-6">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-orange-500"
-                  />
-                  <div>
-                    <h3 className="font-bold text-lg">{testimonial.name}</h3>
-                    <p className="text-orange-500 text-sm">{testimonial.role}</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                
-                <p className="text-gray-400 leading-relaxed">{testimonial.text}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <FAQ />
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-orange-600 via-red-600 to-orange-600">

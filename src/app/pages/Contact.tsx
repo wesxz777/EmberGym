@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from "lucide-react";
+import { useState, useMemo } from "react";
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
+import { SCHEDULE } from "../data/gymData";
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -8,12 +9,13 @@ export function Contact() {
     email: "",
     phone: "",
     classType: "",
-    date: "",
-    time: "",
+    scheduleId: "",
     message: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [showFreeTrial, setShowFreeTrial] = useState(false);
 
   const validateForm = () => {
@@ -47,36 +49,50 @@ export function Contact() {
       errors.classType = "Please select a class type";
     }
 
-    // Date validation
-    if (!formData.date) {
-      errors.date = "Please select a date";
-    } else {
-      const selectedDate = new Date(formData.date);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (selectedDate < today) {
-        errors.date = "Please select a future date";
-      }
-    }
-
-    // Time validation
-    if (!formData.time) {
-      errors.time = "Please select a time";
+    // Schedule slot validation
+    if (!formData.scheduleId) {
+      errors.scheduleId = "Please select a schedule slot";
     }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
 
-    if (validateForm()) {
-      // In a real app, you would send this to a backend
-      console.log("Form submitted:", formData);
+    if (!validateForm()) return;
+
+    const slot = SCHEDULE.find((s) => s.id === Number(formData.scheduleId));
+    if (!slot) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/contact-bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          class_type: formData.classType,
+          schedule_id: slot.id,
+          schedule_day: slot.day,
+          schedule_time: slot.time,
+          class_name: slot.className,
+          room: slot.room,
+          message: formData.message || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.message || "Failed to submit booking");
+      }
+
       setIsSubmitted(true);
 
-      // Reset form after 3 seconds
       setTimeout(() => {
         setIsSubmitted(false);
         setFormData({
@@ -84,11 +100,14 @@ export function Contact() {
           email: "",
           phone: "",
           classType: "",
-          date: "",
-          time: "",
+          scheduleId: "",
           message: "",
         });
-      }, 3000);
+      }, 10000);
+    } catch (err: any) {
+      setSubmitError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,27 +128,26 @@ export function Contact() {
     }
   };
 
-  const classTypes = [
-    "Yoga",
-    "HIIT",
-    "Strength Training",
-    "Cardio Cycling",
-    "Pilates",
-    "Boxing",
-    "CrossFit",
-    "Zumba",
-  ];
+  const classTypes = [...new Set(SCHEDULE.map((s) => s.type))];
 
-  const timeSlots = [
-    "06:00 AM",
-    "08:00 AM",
-    "10:00 AM",
-    "12:00 PM",
-    "02:00 PM",
-    "04:00 PM",
-    "06:00 PM",
-    "08:00 PM",
-  ];
+  const availableSlots = useMemo(
+    () =>
+      formData.classType
+        ? SCHEDULE.filter((s) => s.type === formData.classType)
+        : [],
+    [formData.classType]
+  );
+
+  const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const sortedSlots = useMemo(
+    () =>
+      [...availableSlots].sort(
+        (a, b) =>
+          DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day) ||
+          a.time.localeCompare(b.time)
+      ),
+    [availableSlots]
+  );
 
   return (
     <div className="min-h-screen bg-black">
@@ -224,34 +242,6 @@ export function Contact() {
                   </div>
                 </div>
               </motion.div>
-
-              {/* Map Placeholder */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/20 rounded-2xl overflow-hidden h-80"
-              >
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-16 h-16 text-orange-500 mx-auto mb-4" />
-                    <p className="text-gray-400">
-                      Interactive map would be displayed here
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Free Trial Button */}
-              <motion.button
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                onClick={() => setShowFreeTrial(true)}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-4 rounded-xl font-semibold text-lg hover:shadow-lg hover:shadow-orange-500/50 transition-all"
-              >
-                Schedule Free Trial
-              </motion.button>
             </div>
 
             {/* Booking Form */}
@@ -364,7 +354,12 @@ export function Contact() {
                     <select
                       name="classType"
                       value={formData.classType}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, classType: e.target.value, scheduleId: "" }));
+                        if (formErrors.classType) {
+                          setFormErrors((prev) => { const n = { ...prev }; delete n.classType; return n; });
+                        }
+                      }}
                       className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors ${
                         formErrors.classType
                           ? "border-red-500 focus:border-red-500"
@@ -385,58 +380,36 @@ export function Contact() {
                     )}
                   </div>
 
-                  {/* Date & Time */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-300">
-                        Date *
-                      </label>
-                      <input
-                        type="date"
-                        name="date"
-                        value={formData.date}
-                        onChange={handleChange}
-                        min={new Date().toISOString().split("T")[0]}
-                        className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors ${
-                          formErrors.date
-                            ? "border-red-500 focus:border-red-500"
-                            : "border-orange-500/30 focus:border-orange-500"
-                        }`}
-                      />
-                      {formErrors.date && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.date}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-300">
-                        Time *
-                      </label>
-                      <select
-                        name="time"
-                        value={formData.time}
-                        onChange={handleChange}
-                        className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors ${
-                          formErrors.time
-                            ? "border-red-500 focus:border-red-500"
-                            : "border-orange-500/30 focus:border-orange-500"
-                        }`}
-                      >
-                        <option value="">Select a time</option>
-                        {timeSlots.map((time) => (
-                          <option key={time} value={time}>
-                            {time}
-                          </option>
-                        ))}
-                      </select>
-                      {formErrors.time && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.time}
-                        </p>
-                      )}
-                    </div>
+                  {/* Schedule Slot (day + time) */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-300">
+                      Schedule Slot *
+                    </label>
+                    <select
+                      name="scheduleId"
+                      value={formData.scheduleId}
+                      onChange={handleChange}
+                      disabled={!formData.classType}
+                      className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors disabled:opacity-40 ${
+                        formErrors.scheduleId
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-orange-500/30 focus:border-orange-500"
+                      }`}
+                    >
+                      <option value="">
+                        {formData.classType ? "Select a schedule" : "Choose a class type first"}
+                      </option>
+                      {sortedSlots.map((slot) => (
+                        <option key={slot.id} value={String(slot.id)}>
+                          {slot.day} {slot.time} — {slot.className} ({slot.room})
+                        </option>
+                      ))}
+                    </select>
+                    {formErrors.scheduleId && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {formErrors.scheduleId}
+                      </p>
+                    )}
                   </div>
 
                   {/* Message */}
@@ -454,13 +427,28 @@ export function Contact() {
                     />
                   </div>
 
+                  {/* Submit Error */}
+                  {submitError && (
+                    <p className="text-red-500 text-sm text-center">{submitError}</p>
+                  )}
+
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/50 transition-all"
+                    disabled={isSubmitting}
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/50 transition-all disabled:opacity-60"
                   >
-                    <Send className="w-5 h-5" />
-                    Book Class
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Booking...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-5 h-5" />
+                        Book Class
+                      </>
+                    )}
                   </button>
                 </form>
               )}

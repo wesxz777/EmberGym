@@ -5,23 +5,23 @@ import Slider from "react-slick";
 
 export function Gallery() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Equipment");
 
   const transformationGallery = [
     {
       id: 1,
       name: "Wesley C.",
       before: "public/TransformationImg/Before_Caya'.jpeg",
-      after: "public/TransformationImg/After_Caya.png",
+      after: "public/TransformationImg/After_Caya.png", 
       duration: "6 months",
       weightLost: "10 lbs",
       testimonial: "Ember Gym changed my life! The trainers are amazing and the community is so supportive.",
     },
     {
       id: 2,
-      name: "Heart I.",
-      before: "https://images.unsplash.com/photo-1734668484998-c943d1fcb48a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFuc2Zvcm1hdGlvbiUyMGJlZm9yZSUyMGFmdGVyJTIwZml0bmVzc3xlbnwxfHx8fDE3NzAyNzE2MTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      after: "https://images.unsplash.com/photo-1626807020058-30eb4ef93c84?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmaXRuZXNzJTIwdHJhbnNmb3JtYXRpb24lMjBzdHJvbmd8ZW58MXx8fHwxNzcwMjcxNDQ2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      name: "Obi B.",
+      before: "public/TransformationImg/Before_Benedicto.jpeg",
+      after: "public/TransformationImg/After_Benedicto.jpg",
       duration: "9 months",
       weightLost: "50 lbs",
       testimonial: "I gained so much confidence and strength. Best investment I've ever made!",
@@ -118,13 +118,10 @@ export function Gallery() {
     return () => { cancelled = true; };
   }, []);
 
-  const categories = ["All", "Equipment", "Classes", "Training", "Facility"];
+  const categories = ["Equipment", "Classes", "Training", "Facility"];
 
   const sourceImages = apiFacilityImages.length ? apiFacilityImages : facilityImages;
-  const filteredImages =
-    selectedCategory === "All"
-      ? sourceImages
-      : sourceImages.filter((img) => img.category === selectedCategory);
+  const filteredImages = sourceImages.filter((img) => img.category === selectedCategory);
 
   const sliderSettings = {
     dots: true,
@@ -250,9 +247,6 @@ export function Gallery() {
                       <p className="text-xl text-gray-300 italic mb-6">
                         "{transformation.testimonial}"
                       </p>
-                      <button className="bg-gradient-to-r from-orange-500 to-red-600 px-8 py-4 rounded-full font-semibold hover:shadow-lg hover:shadow-orange-500/50 transition-all self-start">
-                        Start Your Transformation
-                      </button>
                     </div>
                   </div>
                 </div>

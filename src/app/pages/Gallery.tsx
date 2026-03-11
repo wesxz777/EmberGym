@@ -202,7 +202,6 @@ export function Gallery() {
                     {/* Before/After Images */}
                     <div className="space-y-4">
                       <div>
-                        <p className="text-sm text-gray-400 mb-2">BEFORE</p>
                         <div className="relative h-96 rounded-xl overflow-hidden">
                           <img
                             src={transformation.before}
@@ -215,7 +214,6 @@ export function Gallery() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-400 mb-2">AFTER</p>
                         <div className="relative h-96 rounded-xl overflow-hidden">
                           <img
                             src={transformation.after}

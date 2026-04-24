@@ -1,13 +1,19 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { Mail, Lock, Eye, EyeOff, LogIn, Dumbbell } from "lucide-react";
+import React, { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router";
+import { Mail, Lock, Eye, EyeOff, LogIn} from "lucide-react";
 import { motion } from "motion/react";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 
+axios.defaults.withCredentials = true;
+axios.defaults.withXSRFToken = true;
+axios.defaults.baseURL = "http://localhost:5500";
+
 export function Login() {
+  
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -16,6 +22,18 @@ export function Login() {
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false); 
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [forgotSuccess, setForgotSuccess] = useState<string | null>(null);
+  const [isSendingReset, setIsSendingReset] = useState(false);
+
+  const searchParams = new URLSearchParams(location.search);
+  const view: "login" | "forgot" =
+    location.pathname.endsWith("/forgot-password") ||
+    location.pathname.endsWith("forgot-password") ||
+    searchParams.get("mode") === "forgot"
+      ? "forgot"
+      : "login";
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -40,6 +58,8 @@ export function Login() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+
+    
     e.preventDefault();
     
     if (validateForm()) {
@@ -50,12 +70,14 @@ export function Login() {
         const payload = {
           email: formData.email,
           password: formData.password,
-          // Convert camelCase to snake_case for Laravel
           remember_me: formData.rememberMe, 
         };
 
-        // Send login data to Laravel
-        const response = await axios.post("http://127.0.0.1:8000/api/login", payload, {
+        // 1. The Handshake: Get the security token from Laravel
+        await axios.get("http://localhost:8000/sanctum/csrf-cookie");
+
+        // 2. The Login: Now send the credentials (Axios will auto-attach the token)
+        const response = await axios.post("http://localhost:8000/api/login", payload, {
           headers: {
             "Accept": "application/json",
             "Content-Type": "application/json"
@@ -63,37 +85,95 @@ export function Login() {
         });
 
         if (response.status === 200) {
-          // 1. Grab the VIP Badge (Token) from Laravel
+          // Grab the VIP Badge (Token) from Laravel
           const token = response.data.token;
           const user = response.data.user;
+
+          // Convert membership_plan from lowercase to capitalized
+          let membership = null;
+          if (user.membership_plan && user.membership_plan !== 'none') {
+            membership = user.membership_plan.charAt(0).toUpperCase() + user.membership_plan.slice(1);
+          }
+
+          // Pass the user data AND the token to your updated AuthContext
           login({
+            id: user.id, 
             firstName: user.first_name,
             lastName: user.last_name,
             email: user.email,
             phone: user.phone,
-            membership: user.membership,
-          });
-          // 2. Save the badge in the browser's local storage so they stay logged in
-          localStorage.setItem("token", token);
-          localStorage.setItem("user", JSON.stringify(user));
+            membership: membership as "Basic" | "Pro" | "Elite" | null,
+            role: user.role,
+          }, token); 
 
-          // 3. Success! Send them to the home page
-          alert(`Welcome back, ${user.first_name}!`);
-          navigate("/");
+          // Redirect based on role
+          const adminRoles = ["admin", "manager", "super_admin"];
+          if (adminRoles.includes(user.role)) {
+            navigate("/admin");
+          } else {
+            navigate("/");
+          }
         }
       } catch (error: any) {
-        // Handle incorrect email/password (401 Unauthorized) or validation errors (422)
         if (error.response?.status === 401 || error.response?.status === 422) {
-          setFormErrors({
-            email: "Invalid email or password. Please try again.",
-          });
-        } else {
-          console.error("Login failed:", error);
-          alert("Database connection failed. Is your Laravel server running?");
-        }
+        setFormErrors({
+          email: "Invalid email or password. Please try again.",
+        });
+      } else if (error.response?.status === 419) {
+        // Specifically handle the CSRF/Session timeout error
+        alert("Session expired. Please refresh the page and try again.");
+      } else {
+        console.error("Login failed:", error);
+        alert("Database connection failed. Is your Laravel server running?");
+      }
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const validateForgotEmail = (email: string) => {
+    const trimmed = email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!trimmed) return "Email is required";
+    if (!emailRegex.test(trimmed)) return "Please enter a valid email address";
+    return null;
+  };
+
+  const handleSendReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+    setForgotSuccess(null);
+
+    const validationError = validateForgotEmail(forgotEmail);
+    if (validationError) {
+      setForgotError(validationError);
+      return;
+    }
+
+    setIsSendingReset(true);
+    try {
+      await axios.post(
+        "http://localhost:8000/api/forgot-password", // Changed to localhost
+        { email: forgotEmail.trim() },
+        // ... rest of your config
+        {
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      setForgotSuccess("If that email exists, a password reset link has been sent.");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        (typeof error?.response?.data === "string" ? error.response.data : null) ||
+        "Could not send reset email. Please try again.";
+      setForgotError(message);
+    } finally {
+      setIsSendingReset(false);
     }
   };
 
@@ -126,9 +206,6 @@ export function Login() {
           className="hidden lg:block"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="bg-gradient-to-br from-orange-500 to-red-600 p-4 rounded-2xl">
-              <Dumbbell className="w-12 h-12" />
-            </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
               EMBER GYM
             </h1>
@@ -161,16 +238,28 @@ export function Login() {
           className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/20 rounded-2xl p-8 md:p-12"
         >
           <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-2">Sign In</h2>
-            <p className="text-gray-400">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-orange-500 hover:text-orange-400 font-medium">
-                Sign up
-              </Link>
-            </p>
+            {view === "login" ? (
+              <>
+                <h2 className="text-3xl font-bold mb-2">Sign In</h2>
+                <p className="text-gray-400">
+                  Don't have an account?{" "}
+                  <Link to="/signup" className="text-orange-500 hover:text-orange-400 font-medium">
+                    Sign up
+                  </Link>
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-3xl font-bold mb-2">Forgot Password</h2>
+                <p className="text-gray-400">
+                  Enter your email and we’ll send you a reset link.
+                </p>
+              </>
+            )}
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {view === "login" ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-300">
@@ -260,55 +349,59 @@ export function Login() {
             >
               <LogIn className="w-5 h-5" />
               {isLoading ? "Checking Details..." : "Sign In"}
-            </button>
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-orange-500/20"></div>
+            </button>            
+            </form>
+          ) : (
+            <form onSubmit={handleSendReset} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-300">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="email"
+                    name="forgotEmail"
+                    value={forgotEmail}
+                    onChange={(e) => {
+                      setForgotEmail(e.target.value);
+                      if (forgotError) setForgotError(null);
+                      if (forgotSuccess) setForgotSuccess(null);
+                    }}
+                    className={`w-full bg-black border rounded-lg pl-12 pr-4 py-3 focus:outline-none transition-colors ${
+                      forgotError
+                        ? "border-red-500 focus:border-red-500"
+                        : "border-orange-500/30 focus:border-orange-500"
+                    }`}
+                    placeholder="your@email.com"
+                  />
+                </div>
+                {forgotError && (
+                  <p className="text-red-500 text-sm mt-1">{forgotError}</p>
+                )}
+                {forgotSuccess && (
+                  <p className="text-green-500 text-sm mt-1">{forgotSuccess}</p>
+                )}
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-gray-900 px-4 text-gray-400">Or continue with</span>
-              </div>
-            </div>
 
-            {/* Social Login */}
-            <div className="grid grid-cols-2 gap-4">
               <button
-                type="button"
-                className="bg-gray-800 hover:bg-gray-700 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                type="submit"
+                disabled={isSendingReset}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-3.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                Google
+                {isSendingReset ? "Sending..." : "Send reset link"}
               </button>
-              <button
-                type="button"
-                className="bg-gray-800 hover:bg-gray-700 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Facebook
-              </button>
-            </div>
-          </form>
+
+              <div className="flex items-center justify-between text-sm">
+                <Link to="/login" className="text-orange-500 hover:text-orange-400">
+                  Back to sign in
+                </Link>
+                <Link to="/signup" className="text-gray-300 hover:text-white">
+                  Create account
+                </Link>
+              </div>
+            </form>
+          )}
         </motion.div>
       </div>
     </div>

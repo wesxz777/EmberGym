@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude install:*)",
+      "Bash(powershell -Command \"[System.Environment]::SetEnvironmentVariable\\('PATH', [System.Environment]::GetEnvironmentVariable\\('PATH', 'User'\\) + ';C:\\\\Users\\\\wesle\\\\.local\\\\bin', 'User'\\)\")",
+      "Bash(powershell -Command \"[System.Environment]::GetEnvironmentVariable\\('PATH', 'User'\\)\")"
+    ]
+  }
+}
+                                    

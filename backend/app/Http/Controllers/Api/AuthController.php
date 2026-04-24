@@ -58,4 +58,75 @@ class AuthController extends Controller
             'token' => $token
         ], 200);
     }
+
+    public function checkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $exists = User::where('email', $request->email)->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Email already in use' : 'Email is available'
+        ], 200);
+    }
+
+    public function checkPhone(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required|string',
+        ]);
+
+        $exists = User::where('phone', $request->phone)->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'message' => $exists ? 'Phone number already in use' : 'Phone number is available'
+        ], 200);
+    }
+
+    public function updateProfile(Request $request)
+{
+    $user = $request->user();
+    
+    $validated = $request->validate([
+        'firstName' => 'required|string|max:255',
+        'lastName'  => 'required|string|max:255',
+        'email'     => 'required|email|unique:users,email,' . $user->id,
+        'phone'     => 'nullable|string|max:50',
+    ]);
+
+    $user->update([
+        'first_name' => $validated['firstName'],
+        'last_name'  => $validated['lastName'],
+        'email'      => $validated['email'],
+        'phone'      => $validated['phone'],
+    ]);
+
+    return response()->json(['message' => 'Profile updated successfully', 'user' => $user]);
+}
+
+    public function updatePassword(Request $request)
+{
+    $request->validate([
+        'current' => 'required',
+        'newPw'   => 'required|min:8',
+    ]);
+
+    $user = $request->user();
+
+    // Check if the current password is correct
+    if (!Hash::check($request->current, $user->password)) {
+        return response()->json(['message' => 'Current password does not match.'], 422);
+    }
+
+    // Update to new password
+    $user->update([
+        'password' => Hash::make($request->newPw),
+    ]);
+
+    return response()->json(['message' => 'Password updated successfully.']);
+}
 }

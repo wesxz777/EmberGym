@@ -27,10 +27,10 @@ import {
   canPlanAccessClass,
   ScheduleItem,
 } from "../data/gymData";
+import axios from "axios";
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
 export type BookingSource = { kind: "class"; classId: number };
-
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -60,6 +60,7 @@ function PlanBadge({ plan }: { plan: string }) {
 
 /* ─── Main component ───────────────────────────────────────────────────────── */
 export function BookingModal({ isOpen, onClose, source }: Props) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoggedIn, user } = useAuth();
   const { addBooking, removeBooking, isBooked, getBookingBySchedule, weeklyCount, getSpotsLeft } = useBookings();
 
@@ -105,27 +106,73 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const slotAlreadyBooked = activeSlot ? isBooked(activeSlot.id) : false;
   const existingBooking = activeSlot ? getBookingBySchedule(activeSlot.id) : undefined;
 
-  /* ─── Actions ─────────────────────────────────────────────────────────── */
-  const handleConfirm = () => {
-    if (!activeSlot || !classData) return;
-    addBooking({
-      scheduleId: activeSlot.id,
-      classId: classData.id,
-      className: activeSlot.className,
-      type: activeSlot.type,
-      instructor: activeSlot.instructor,
-      day: activeSlot.day,
-      time: activeSlot.time,
-      duration: activeSlot.duration,
-      room: activeSlot.room,
-    });
-    setStep("success");
+/* ─── Actions ─────────────────────────────────────────────────────────── */
+  const handleConfirm = async () => {
+    if (!activeSlot || !classData || !user) return;
+
+    setIsSubmitting(true); 
+
+    try {
+      const payload = {
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        phone: user.phone || "N/A",
+        class_type: activeSlot.type,
+        schedule_id: activeSlot.id,
+        schedule_day: activeSlot.day,
+        schedule_time: activeSlot.time,
+        class_name: activeSlot.className,
+        room: activeSlot.room,
+        message: "Booked via Ember Gym app"
+      };
+
+      const response = await axios.post("/api/contact-bookings", payload);
+
+      if (response.status === 200 || response.status === 201) {
+        addBooking({
+          scheduleId: activeSlot.id,
+          classId: classData.id,
+          className: activeSlot.className,
+          type: activeSlot.type,
+          instructor: activeSlot.instructor,
+          day: activeSlot.day,
+          time: activeSlot.time,
+          duration: activeSlot.duration,
+          room: activeSlot.room,
+        });
+
+        // --- FIXED: Use the new universal notification signal ---
+        window.dispatchEvent(new Event("refresh-notifications"));
+
+        setStep("success");
+      }
+    } catch (error) {
+      console.error("Booking failed to save to database:", error);
+      alert("Failed to confirm booking. Check the console for details.");
+    } finally {
+      setIsSubmitting(false); 
+    }
   };
 
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (!existingBooking) return;
-    removeBooking(existingBooking.bookingId);
-    setStep("cancel");
+
+    setIsSubmitting(true); 
+
+    try {
+      await axios.delete(`/api/contact-bookings/${existingBooking.bookingId}`);
+      removeBooking(existingBooking.bookingId);
+
+      // --- FIXED: Use the new universal notification signal ---
+      window.dispatchEvent(new Event("refresh-notifications"));
+
+      setStep("cancel");
+    } catch (error) {
+      console.error("Failed to cancel booking in database:", error);
+      alert("Could not cancel booking. Please try again.");
+    } finally {
+      setIsSubmitting(false); 
+    }
   };
 
   /* ─── Render ──────────────────────────────────────────────────────────── */
@@ -312,12 +359,24 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                             ? `${activeSlot.className} on ${activeSlot.day} at ${activeSlot.time} has been added to your schedule.`
                             : "Your booking has been cancelled. The spot is now available."}
                         </p>
-                        <button
-                          onClick={onClose}
-                          className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all"
-                        >
-                          {step === "success" ? "View My Schedule" : "Close"}
-                        </button>
+                        
+                        {/* 🔥 FIXED ROUTING HERE 🔥 */}
+                        {step === "success" ? (
+                           <Link
+                             to="/schedule"
+                             onClick={onClose}
+                             className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all inline-block"
+                           >
+                             View My Schedule
+                           </Link>
+                        ) : (
+                          <button
+                            onClick={onClose}
+                            className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all"
+                          >
+                            Close
+                          </button>
+                        )}
                       </motion.div>
                     )}
 
@@ -421,13 +480,22 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                               Close
                             </button>
                             <button
-                              onClick={handleConfirm}
-                              disabled={!selectedSlot || atWeeklyLimit}
-                              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                              <Check className="w-4 h-4" />
-                              {!selectedSlot ? "Select a Slot" : "Confirm Booking"}
-                            </button>
+                            onClick={handleConfirm}
+                            disabled={!selectedSlot || atWeeklyLimit || isSubmitting}
+                            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            {isSubmitting ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Processing...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-4 h-4" />
+                                {!selectedSlot ? "Select a Slot" : "Confirm Booking"}
+                              </>
+                            )}
+                          </button>
                           </>
                         )}
 

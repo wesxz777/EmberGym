@@ -14,3 +14,16 @@ const getApiUrl = (): string => {
 };
 
 export const API_URL = "http://localhost:3001";
+
+import axios from "axios";
+
+const api = axios.create({
+  // IMPORTANT: Make sure this says localhost, not 127.0.0.1!
+  baseURL: "http://localhost:8000/api", 
+  withCredentials: true, 
+});
+
+api.defaults.xsrfCookieName = "XSRF-TOKEN";
+api.defaults.xsrfHeaderName = "X-XSRF-TOKEN";
+
+export default api;

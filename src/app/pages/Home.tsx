@@ -7,46 +7,50 @@ import {
   Award,
   TrendingUp,
   Clock,
-  Target,
-  Zap,
-  X,
-  Flame,
-  ChevronRight,
   MapPin,
   Check,
   BookOpen,
+  AlertTriangle,
+  Crown,
+  Flame,
+  ChevronRight
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
+import axios from "axios";
 
 export function Home() {
   const { isLoggedIn, user } = useAuth();
-  const { bookings, removeBooking } = useBookings();
+  const { bookings, isLoadingBookings, removeBooking } = useBookings();
+  const [bookingToCancel, setBookingToCancel] = useState<any | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+
   const [bmiData, setBmiData] = useState({ weight: "", height: "", unit: "metric" });
+  const [bmiError, setBmiError] = useState("");
   const [bmiResult, setBmiResult] = useState<{
     bmi: number;
     category: string;
     color: string;
   } | null>(null);
-  const [showWorkoutTip, setShowWorkoutTip] = useState(false);
 
   const calculateBMI = () => {
     const weight = parseFloat(bmiData.weight);
     const height = parseFloat(bmiData.height);
 
     if (!weight || !height || weight <= 0 || height <= 0) {
-      alert("Please enter valid weight and height values");
+      setBmiError("Please enter valid weight and height values.");
+      setBmiResult(null);
       return;
     }
 
+    setBmiError("");
+
     let bmi: number;
     if (bmiData.unit === "metric") {
-      // BMI = weight (kg) / (height (m))^2
       const heightInMeters = height / 100;
       bmi = weight / (heightInMeters * heightInMeters);
     } else {
-      // BMI = (weight (lbs) / (height (inches))^2) * 703
       bmi = (weight / (height * height)) * 703;
     }
 
@@ -70,15 +74,38 @@ export function Home() {
     setBmiResult({ bmi: parseFloat(bmi.toFixed(1)), category, color });
   };
 
-  const workoutTips = [
-    "Start with a 5-10 minute warm-up to prepare your muscles",
-    "Stay hydrated - drink water before, during, and after your workout",
-    "Focus on form over weight to prevent injuries",
-    "Rest for 48 hours between strength training the same muscle groups",
-    "Combine cardio and strength training for best results",
-  ];
+  const executeCancellation = async () => {
+    if (!bookingToCancel) return;
+    
+    setIsCancelling(true);
 
-  const currentTip = workoutTips[Math.floor(Math.random() * workoutTips.length)];
+    try {
+      await axios.delete(`/api/contact-bookings/${bookingToCancel.bookingId}`);
+      removeBooking(bookingToCancel.bookingId);
+      window.dispatchEvent(new Event("refresh-notifications"));
+      setBookingToCancel(null);
+    } catch (error) {
+      console.error("Failed to cancel booking in database:", error);
+      alert("Could not cancel the booking. Please try again.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  // --- Dynamic Dashboard Helpers ---
+  const getMembershipDisplay = (plan: string | undefined | null) => {
+    // If plan is null or undefined, default to Basic
+    if (!plan) return { icon: Dumbbell, text: "Basic Member", color: "text-gray-200", bg: "bg-white/10" };
+    
+    const planLower = plan.toLowerCase();
+    if (planLower === "elite") return { icon: Crown, text: "Elite Member", color: "text-yellow-300", bg: "bg-yellow-400/20" };
+    if (planLower === "pro") return { icon: TrendingUp, text: "Pro Member", color: "text-orange-300", bg: "bg-white/20" };
+    
+    return { icon: Dumbbell, text: "Basic Member", color: "text-gray-200", bg: "bg-white/10" };
+  };
+
+  const memDetails = getMembershipDisplay(user?.membership);
+  const nextClass = bookings && bookings.length > 0 ? bookings[0] : null;
 
   return (
     <div>
@@ -90,67 +117,65 @@ export function Home() {
           transition={{ duration: 0.6 }}
           className="relative overflow-hidden bg-gradient-to-r from-orange-600 via-red-600 to-orange-500 py-10"
         >
-          {/* Decorative flame blobs */}
-          <div className="absolute -top-10 -left-10 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              {/* Greeting */}
-              <div className="flex items-center gap-5">
-                <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/50 flex items-center justify-center shrink-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+              
+              {/* Left Side: Greeting */}
+              <div className="flex items-center gap-5 w-full lg:w-auto">
+                <div className="w-16 h-16 rounded-full bg-white/20 border-2 border-white/50 flex items-center justify-center shrink-0 shadow-lg">
                   <span className="text-2xl font-bold text-white">
-                    {user.firstName[0]}{user.lastName ? user.lastName[0] : ""}
+                    {user?.firstName?.[0] || ""}{user?.lastName?.[0] || ""}
                   </span>
                 </div>
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Flame className="w-5 h-5 text-white/80" />
-                    <span className="text-white/80 text-sm font-medium uppercase tracking-wider">Welcome Back</span>
-                  </div>
-                  <h2 className="text-3xl md:text-4xl font-bold text-white">
-                    {user.firstName} {user.lastName}! 💪
+                  <h2 className="text-3xl md:text-4xl font-bold text-white drop-shadow-sm">
+                    {user?.firstName} {user?.lastName}!
                   </h2>
-                  <p className="text-white/80 mt-1">Ready to crush your goals today? Let's get moving!</p>
+                  <p className="text-white/90 font-medium">Ready to crush your goals today?</p>
                 </div>
               </div>
 
-              {/* Quick-action cards */}
-              <div className="flex flex-wrap gap-3 justify-center md:justify-end">
-                {[
-                  { icon: Calendar, label: "My Schedule", to: "/schedule" },
-                  { icon: Dumbbell, label: "Classes", to: "/classes" },
-                  { icon: Target, label: "Membership", to: "/membership" },
-                ].map(({ icon: Icon, label, to }) => (
-                  <Link
-                    key={to}
-                    to={to}
-                    className="flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-sm px-4 py-2.5 rounded-xl text-white text-sm font-medium transition-all hover:shadow-lg group"
-                  >
-                    <Icon className="w-4 h-4" />
-                    {label}
-                    <ChevronRight className="w-3 h-3 opacity-60 group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Progress row */}
-            <div className="mt-6 grid grid-cols-3 gap-4 border-t border-white/20 pt-6">
-              {[
-                { icon: Clock, label: "Booked This Week", value: String(bookings.length) },
-                { icon: Award, label: "Member Since", value: "2026" },
-              ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-center gap-3">
-                  <div className="bg-white/20 p-2 rounded-lg">
-                    <Icon className="w-4 h-4 text-white" />
+              {/* Right Side: Horizontal Dashboard Bar */}
+              <div className="w-full lg:w-auto flex flex-wrap sm:flex-nowrap items-center gap-3">
+                
+                {/* Membership Status */}
+                <div className="flex-1 sm:flex-none flex items-center gap-3 bg-black/20 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 min-w-[180px]">
+                  <div className={`p-2 rounded-lg ${memDetails.bg}`}>
+                    <memDetails.icon className={`w-4 h-4 ${memDetails.color}`} />
                   </div>
                   <div>
-                    <p className="text-white font-bold">{value}</p>
-                    <p className="text-white/70 text-xs">{label}</p>
+                    <p className="text-[10px] text-white/70 uppercase tracking-widest font-bold">Plan</p>
+                    <p className="text-sm font-bold text-white">{memDetails.text}</p>
                   </div>
                 </div>
-              ))}
+
+                {/* Up Next */}
+                <div className="flex-1 sm:flex-none flex items-center gap-3 bg-black/20 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 min-w-[180px]">
+                  <div className="bg-white/10 p-2 rounded-lg">
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-white/70 uppercase tracking-widest font-bold">Up Next</p>
+                    <p className="text-sm font-bold text-white truncate">
+                        {nextClass ? nextClass.className : "No classes"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Momentum */}
+                <div className="flex-1 sm:flex-none flex items-center gap-3 bg-black/20 backdrop-blur-md border border-white/20 rounded-xl px-4 py-3 min-w-[180px]">
+                  <div className="bg-white/10 p-2 rounded-lg">
+                    <Flame className="w-4 h-4 text-orange-200" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-white/70 uppercase tracking-widest font-bold">Momentum</p>
+                    <p className="text-sm font-bold text-white">
+                        {bookings.length} {bookings.length === 1 ? 'Class' : 'Classes'}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
         </motion.section>
@@ -176,18 +201,92 @@ export function Home() {
               </div>
               <Link
                 to="/schedule"
-                className="text-sm text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-1"
+                className="text-sm text-orange-400 hover:text-orange-300 transition-colors flex items-center gap-1 font-medium"
               >
                 View Full Schedule <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
+            {/* ── CUSTOM CANCELLATION MODAL ── */}
+            <AnimatePresence>
+              {bookingToCancel && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm"
+                    onClick={() => !isCancelling && setBookingToCancel(null)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    className="fixed inset-0 z-[70] flex items-center justify-center p-4 pointer-events-none"
+                  >
+                    <div className="bg-gray-950 border border-red-500/20 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden pointer-events-auto">
+                      <div className="p-6 text-center">
+                        <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <AlertTriangle className="w-8 h-8 text-red-500" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white mb-2">Cancel Booking?</h3>
+                        <p className="text-gray-400 text-sm mb-6">
+                          Are you sure you want to cancel your spot in <strong className="text-white">{bookingToCancel.className}</strong> on {bookingToCancel.day}? This action cannot be undone.
+                        </p>
+                        
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => setBookingToCancel(null)}
+                            disabled={isCancelling}
+                            className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-300 hover:bg-gray-800 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            No
+                          </button>
+                          <button
+                            onClick={executeCancellation}
+                            disabled={isCancelling}
+                            className="flex-1 py-2.5 rounded-xl bg-red-600/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isCancelling ? (
+                              <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              "Yes"
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+
             <AnimatePresence mode="popLayout">
-              {bookings.length === 0 ? (
+              {isLoadingBookings ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
+                >
+                  {[1, 2, 3].map((skeleton) => (
+                    <div key={skeleton} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex gap-3 animate-pulse">
+                      <div className="bg-gray-800 w-9 h-9 rounded-lg shrink-0 mt-0.5"></div>
+                      <div className="flex-1 space-y-2 py-1">
+                        <div className="h-4 bg-gray-800 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-800 rounded w-full"></div>
+                        <div className="h-3 bg-gray-800 rounded w-1/4 mt-3"></div>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              ) : bookings.length === 0 ? (
                 <motion.div
                   key="empty"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="flex flex-col items-center justify-center py-10 border border-dashed border-gray-800 rounded-2xl"
                 >
                   <Calendar className="w-10 h-10 text-gray-700 mb-3" />
@@ -214,7 +313,6 @@ export function Home() {
                       transition={{ duration: 0.2 }}
                       className="bg-gray-900 border border-green-500/20 rounded-xl p-4 flex gap-3 group"
                     >
-                      {/* Check icon */}
                       <div className="bg-green-500/15 border border-green-500/25 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
                         <Check className="w-4 h-4 text-green-400" />
                       </div>
@@ -233,12 +331,12 @@ export function Home() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-full">
+                          <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-full font-medium">
                             {booking.type}
                           </span>
                           <button
-                            onClick={() => removeBooking(booking.bookingId)}
-                            className="text-xs text-gray-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                            onClick={() => setBookingToCancel(booking)}
+                            className="text-xs font-semibold text-gray-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                           >
                             Cancel
                           </button>
@@ -255,7 +353,6 @@ export function Home() {
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Image with Overlay */}
         <div className="absolute inset-0">
           <img
             src="public/TrainingImg/CardioTraining.jpg"
@@ -266,7 +363,6 @@ export function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
         </div>
 
-        {/* Hero Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -283,24 +379,26 @@ export function Home() {
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Join the ultimate fitness community with expert trainers, cutting-edge equipment, and personalized programs designed for your success.
             </p>
+            
+            {/* 🔥 UPDATED HERO BUTTONS 🔥 */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/membership"
                 className="bg-gradient-to-r from-orange-500 to-red-600 px-8 py-4 rounded-full text-lg font-semibold hover:shadow-lg hover:shadow-orange-500/50 transition-all inline-block"
               >
-                Start Free Trial
+                Avail Memberships
               </Link>
-              <button
-                onClick={() => setShowWorkoutTip(true)}
-                className="border-2 border-orange-500 px-8 py-4 rounded-full text-lg font-semibold hover:bg-orange-500/10 transition-all"
+              <Link
+                to="/classes"
+                className="border-2 border-orange-500 px-8 py-4 rounded-full text-lg font-semibold hover:bg-orange-500/10 transition-all inline-block"
               >
                 View Classes
-              </button>
+              </Link>
             </div>
+            
           </motion.div>
         </div>
 
-        {/* Scroll Indicator */}
         <motion.div
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
           animate={{ y: [0, 10, 0] }}
@@ -387,10 +485,13 @@ export function Home() {
                 <input
                   type="number"
                   value={bmiData.weight}
-                  onChange={(e) =>
-                    setBmiData({ ...bmiData, weight: e.target.value })
-                  }
-                  className="w-full bg-black border border-orange-500/30 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                  onChange={(e) => {
+                    setBmiData({ ...bmiData, weight: e.target.value });
+                    if (bmiError) {
+                      setBmiError("");
+                    }
+                  }}
+                  className="w-full bg-black border border-orange-500/30 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors text-white"
                   placeholder="Enter weight"
                 />
               </div>
@@ -401,10 +502,13 @@ export function Home() {
                 <input
                   type="number"
                   value={bmiData.height}
-                  onChange={(e) =>
-                    setBmiData({ ...bmiData, height: e.target.value })
-                  }
-                  className="w-full bg-black border border-orange-500/30 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors"
+                  onChange={(e) => {
+                    setBmiData({ ...bmiData, height: e.target.value });
+                    if (bmiError) {
+                      setBmiError("");
+                    }
+                  }}
+                  className="w-full bg-black border border-orange-500/30 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors text-white"
                   placeholder="Enter height"
                 />
               </div>
@@ -419,8 +523,8 @@ export function Home() {
                   onClick={() => setBmiData({ ...bmiData, unit: "metric" })}
                   className={`flex-1 py-3 rounded-lg font-medium transition-all ${
                     bmiData.unit === "metric"
-                      ? "bg-gradient-to-r from-orange-500 to-red-600"
-                      : "bg-gray-800 hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                   }`}
                 >
                   Metric (kg, cm)
@@ -429,8 +533,8 @@ export function Home() {
                   onClick={() => setBmiData({ ...bmiData, unit: "imperial" })}
                   className={`flex-1 py-3 rounded-lg font-medium transition-all ${
                     bmiData.unit === "imperial"
-                      ? "bg-gradient-to-r from-orange-500 to-red-600"
-                      : "bg-gray-800 hover:bg-gray-700"
+                      ? "bg-gradient-to-r from-orange-500 to-red-600 text-white"
+                      : "bg-gray-800 text-gray-300 hover:bg-gray-700"
                   }`}
                 >
                   Imperial (lbs, inches)
@@ -440,10 +544,16 @@ export function Home() {
 
             <button
               onClick={calculateBMI}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-4 rounded-lg font-semibold text-lg hover:shadow-lg hover:shadow-orange-500/50 transition-all"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-4 rounded-lg font-semibold text-lg text-white hover:shadow-lg hover:shadow-orange-500/50 transition-all"
             >
               Calculate BMI
             </button>
+
+            {bmiError && (
+              <p className="mt-4 text-center text-sm font-medium text-red-400" role="alert" aria-live="polite">
+                {bmiError}
+              </p>
+            )}
 
             {bmiResult && (
               <motion.div
@@ -467,39 +577,6 @@ export function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { icon: Users, number: "5000+", label: "Active Members" },
-              { icon: Dumbbell, number: "50+", label: "Classes per Week" },
-              { icon: Award, number: "15+", label: "Expert Trainers" },
-              { icon: TrendingUp, number: "98%", label: "Success Rate" },
-            ].map((stat, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="text-center"
-              >
-                <div className="flex justify-center mb-4">
-                  <div className="bg-gradient-to-br from-orange-500 to-red-600 w-16 h-16 rounded-full flex items-center justify-center">
-                    <stat.icon className="w-8 h-8" />
-                  </div>
-                </div>
-                <p className="text-4xl md:text-5xl font-bold text-orange-500 mb-2">
-                  {stat.number}
-                </p>
-                <p className="text-gray-400">{stat.label}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-orange-600 via-red-600 to-orange-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -508,7 +585,7 @@ export function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
               Ready to Start Your Journey?
             </h2>
             <p className="text-xl mb-8 text-white/90">
@@ -517,13 +594,13 @@ export function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/membership"
-                className="bg-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-900 transition-all inline-block"
+                className="bg-black text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-900 transition-all inline-block"
               >
                 View Membership Plans
               </Link>
               <Link
                 to="/contact"
-                className="border-2 border-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-all inline-block"
+                className="border-2 border-white text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-all inline-block"
               >
                 Schedule a Tour
               </Link>
@@ -531,37 +608,6 @@ export function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* Workout Tip Modal */}
-      {showWorkoutTip && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/30 rounded-2xl p-8 max-w-lg w-full relative"
-          >
-            <button
-              onClick={() => setShowWorkoutTip(false)}
-              className="absolute top-4 right-4 p-2 hover:bg-gray-800 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-gradient-to-br from-orange-500 to-red-600 p-3 rounded-lg">
-                <Zap className="w-6 h-6" />
-              </div>
-              <h3 className="text-2xl font-bold">Pro Tip</h3>
-            </div>
-            <p className="text-lg text-gray-300 mb-6">{currentTip}</p>
-            <button
-              onClick={() => setShowWorkoutTip(false)}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-orange-500/50 transition-all"
-            >
-              Got It!
-            </button>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }

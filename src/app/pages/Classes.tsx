@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Clock, Users, Filter, Heart, Zap, Flame, Lock, LogIn, Check, Crown, Dumbbell } from "lucide-react";
+import { Clock, Users, Heart, Zap, Flame, Lock, LogIn, Check, Crown, Dumbbell } from "lucide-react";
 import { motion } from "motion/react";
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
@@ -112,8 +112,6 @@ export function Classes() {
       <section className="sticky top-20 z-40 bg-black/95 backdrop-blur-sm border-b border-orange-500/20 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-5 h-5 text-orange-500" />
-            <h3 className="font-semibold">Filter Classes</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

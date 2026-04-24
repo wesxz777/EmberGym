@@ -3,7 +3,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Filter,
   ChevronLeft,
   ChevronRight,
   Check,
@@ -170,8 +169,6 @@ export function Schedule() {
         <section className="sticky top-20 z-40 bg-black/95 backdrop-blur-sm border-b border-orange-500/20 py-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-2 mb-4">
-              <Filter className="w-5 h-5 text-orange-500" />
-              <h3 className="font-semibold">Filter Schedule</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -303,28 +300,6 @@ export function Schedule() {
                             </p>
                             <p className="text-xs text-gray-400">Spots Left</p>
                           </div>
-
-                          {/* Action */}
-                          {slotBooked ? (
-                            /* Already booked — link to Home's My Schedule to manage */
-                            <Link
-                              to="/"
-                              className="flex items-center gap-2 bg-green-600/15 hover:bg-green-600/25 border border-green-500/30 px-5 py-2.5 rounded-lg font-semibold text-sm text-green-400 transition-all whitespace-nowrap"
-                            >
-                              <Check className="w-4 h-4" />
-                              View Booking
-                            </Link>
-                          ) : (
-                            /* Not booked — nudge to Classes page */
-                            <Link
-                              to="/classes"
-                              className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 border border-orange-500/20 hover:border-orange-500/50 px-5 py-2.5 rounded-lg font-semibold text-sm text-gray-300 hover:text-white transition-all whitespace-nowrap group"
-                            >
-                              <Dumbbell className="w-4 h-4 text-orange-500" />
-                              Book in Classes
-                              <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-                            </Link>
-                          )}
                         </div>
                       </div>
                     </motion.div>

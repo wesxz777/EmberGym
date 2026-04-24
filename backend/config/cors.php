@@ -14,13 +14,13 @@ return [
     | To learn more: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
     |
     */
-
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
-    
+    // Add your exact React URLs here
+    'allowed_origins' => ['http://localhost:5500', 'http://127.0.0.1:5500'],
+
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
@@ -29,6 +29,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
-
+    // THIS IS THE CRUCIAL PART: Change this to true
+    'supports_credentials' => true,
 ];

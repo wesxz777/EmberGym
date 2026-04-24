@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "./AuthContext";
 import { SCHEDULE, CLASSES } from "../data/gymData";
 
 export interface Booking {
@@ -25,12 +27,61 @@ interface BookingContextType {
   getSpotsLeft: (scheduleId: number) => number;
   /** Min spots left across all schedule slots for a given class (for Classes page) */
   getClassMinSpots: (classId: number) => number;
+  isLoadingBookings: boolean;
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [isLoadingBookings, setIsLoadingBookings] = useState(true);
+  const { isLoggedIn } = useAuth(); // Grab the login status
+
+  // --- THE DATA FETCHER ---
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!isLoggedIn) {
+        setBookings([]);
+        setIsLoadingBookings(false); // <-- Stop loading if logged out
+        return;
+      }
+
+      setIsLoadingBookings(true); // <-- Start loading
+      try {
+        const response = await axios.get('/api/my-bookings');
+        
+        // Translate Laravel's database records into React's Booking interface
+        const dbBookings = response.data;
+        const formattedBookings: Booking[] = dbBookings.map((dbBooking: any) => {
+          // Cross-reference local data to fill in the blanks
+          const classInfo = CLASSES.find(c => c.name === dbBooking.class_name);
+          const scheduleInfo = SCHEDULE.find(s => s.id === dbBooking.schedule_id);
+
+          return {
+            bookingId: dbBooking.id.toString(), // Use the real DB ID
+            scheduleId: dbBooking.schedule_id,
+            classId: classInfo?.id || 0,
+            className: dbBooking.class_name,
+            type: dbBooking.class_type,
+            instructor: classInfo?.instructor || scheduleInfo?.instructor || 'TBA',
+            day: dbBooking.schedule_day,
+            time: dbBooking.schedule_time,
+            duration: classInfo?.duration || 60,
+            room: dbBooking.room || 'Main Studio'
+          };
+        });
+
+        // Set the successfully mapped bookings into state!
+        setBookings(formattedBookings);
+      } catch (error) {
+        console.error("Failed to fetch schedule from database:", error);
+      } finally {
+        setIsLoadingBookings(false); // <-- Stop loading whether it succeeds or fails
+      }
+    };
+
+    fetchBookings();
+  }, [isLoggedIn]); // This hook runs every time login status changes
 
   const addBooking = (b: Omit<Booking, "bookingId">) => {
     const bookingId = `bk-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -65,8 +116,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
   return (
     <BookingContext.Provider
-      value={{ bookings, addBooking, removeBooking, isBooked, getBookingBySchedule, weeklyCount, getSpotsLeft, getClassMinSpots }}
-    >
+value={{ bookings, addBooking, removeBooking, isBooked, getBookingBySchedule, weeklyCount, getSpotsLeft, getClassMinSpots, isLoadingBookings }}    >
       {children}
     </BookingContext.Provider>
   );

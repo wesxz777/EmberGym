@@ -1,22 +1,19 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
-import { SCHEDULE } from "../data/gymData";
+import axios from "axios";
 
 export function Contact() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
-    classType: "",
-    scheduleId: "",
     message: "",
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
-  const [showFreeTrial, setShowFreeTrial] = useState(false);
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
@@ -44,14 +41,9 @@ export function Contact() {
       errors.phone = "Please enter a valid phone number";
     }
 
-    // Class type validation
-    if (!formData.classType) {
-      errors.classType = "Please select a class type";
-    }
-
-    // Schedule slot validation
-    if (!formData.scheduleId) {
-      errors.scheduleId = "Please select a schedule slot";
+    // Message validation
+    if (!formData.message.trim()) {
+      errors.message = "Please enter your message or concern";
     }
 
     setFormErrors(errors);
@@ -64,61 +56,52 @@ export function Contact() {
 
     if (!validateForm()) return;
 
-    const slot = SCHEDULE.find((s) => s.id === Number(formData.scheduleId));
-    if (!slot) return;
-
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/contact-bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          class_type: formData.classType,
-          schedule_id: slot.id,
-          schedule_day: slot.day,
-          schedule_time: slot.time,
-          class_name: slot.className,
-          room: slot.room,
-          message: formData.message || null,
-        }),
-      });
+      // 1. The Handshake (wakes up the security token)
+      await axios.get("http://localhost:8000/sanctum/csrf-cookie");
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.message || "Failed to submit booking");
+      // 2. The Payload matching our new ContactMessage model
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+      };
+
+      // 3. The Request to our brand new endpoint
+      const response = await axios.post("http://localhost:8000/api/contact", payload);
+
+      if (response.status === 200 || response.status === 201) {
+        setIsSubmitted(true);
+
+        // Fire a signal so the Admin dashboard can pick it up in real-time later!
+        window.dispatchEvent(new Event("new-concern"));
+
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setFormData({
+            name: "",
+            email: "",
+            phone: "",
+            message: "",
+          });
+        }, 8000);
       }
-
-      setIsSubmitted(true);
-
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setFormData({
-          name: "",
-          email: "",
-          phone: "",
-          classType: "",
-          scheduleId: "",
-          message: "",
-        });
-      }, 10000);
     } catch (err: any) {
-      setSubmitError(err.message || "Something went wrong. Please try again.");
+      const errorMessage = err.response?.data?.message || err.message || "Something went wrong. Please try again.";
+      setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error for this field when user starts typing
+    
     if (formErrors[name]) {
       setFormErrors((prev) => {
         const newErrors = { ...prev };
@@ -127,27 +110,6 @@ export function Contact() {
       });
     }
   };
-
-  const classTypes = [...new Set(SCHEDULE.map((s) => s.type))];
-
-  const availableSlots = useMemo(
-    () =>
-      formData.classType
-        ? SCHEDULE.filter((s) => s.type === formData.classType)
-        : [],
-    [formData.classType]
-  );
-
-  const DAY_ORDER = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const sortedSlots = useMemo(
-    () =>
-      [...availableSlots].sort(
-        (a, b) =>
-          DAY_ORDER.indexOf(a.day) - DAY_ORDER.indexOf(b.day) ||
-          a.time.localeCompare(b.time)
-      ),
-    [availableSlots]
-  );
 
   return (
     <div className="min-h-screen bg-black">
@@ -162,7 +124,7 @@ export function Contact() {
               Get in <span className="text-orange-500">Touch</span>
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Book a class, schedule a tour, or reach out with any questions. We're here to help you start your fitness journey!
+              Have a question, concern, or just want to say hi? Send us a message and our team will get back to you shortly!
             </p>
           </motion.div>
         </div>
@@ -190,11 +152,11 @@ export function Contact() {
                     <div>
                       <h3 className="font-semibold mb-1">Address</h3>
                       <p className="text-gray-400">
-                        Unit 305, Fitness Tower Building
+                        JP Rizal Extension
                         <br />
-                        123 Bonifacio Global City, Taguig
+                        West Rembo, Taguig City
                         <br />
-                        Metro Manila, Philippines 1634
+                        Metro Manila, 1215, Philippines
                       </p>
                     </div>
                   </div>
@@ -209,7 +171,7 @@ export function Contact() {
                       <p className="text-gray-400">
                         +63 917 123 4567
                         <br />
-                        (02) 8123-4567
+                        (555) 123-4567
                       </p>
                     </div>
                   </div>
@@ -244,14 +206,14 @@ export function Contact() {
               </motion.div>
             </div>
 
-            {/* Booking Form */}
+            {/* Contact Form */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/20 rounded-2xl p-8"
             >
               <h2 className="text-3xl font-bold mb-6">
-                Book a <span className="text-orange-500">Class</span>
+                Send a <span className="text-orange-500">Message</span>
               </h2>
 
               {isSubmitted ? (
@@ -264,10 +226,10 @@ export function Contact() {
                     <CheckCircle className="w-16 h-16 text-green-500" />
                   </div>
                   <h3 className="text-2xl font-bold mb-2">
-                    Booking Confirmed!
+                    Message Sent!
                   </h3>
                   <p className="text-gray-400">
-                    We'll send you a confirmation email shortly.
+                    Thank you for reaching out. Our team will review your message and get back to you soon.
                   </p>
                 </motion.div>
               ) : (
@@ -281,7 +243,11 @@ export function Contact() {
                       type="text"
                       name="name"
                       value={formData.name}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        const cleanValue = e.target.value.replace(/[^a-zA-Z\s.]/g, "").trimStart();
+                        e.target.value = cleanValue;
+                        handleChange(e);
+                      }}
                       className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors ${
                         formErrors.name
                           ? "border-red-500 focus:border-red-500"
@@ -290,16 +256,13 @@ export function Contact() {
                       placeholder="Wesley Xyron C. Caya"
                     />
                     {formErrors.name && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {formErrors.name}
-                      </p>
+                      <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
                     )}
                   </div>
 
                   {/* Email & Phone */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-
                       <label className="block text-sm font-medium mb-2 text-gray-300">
                         Email *
                       </label>
@@ -316,9 +279,7 @@ export function Contact() {
                         placeholder="your@example.com"
                       />
                       {formErrors.email && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.email}
-                        </p>
+                        <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
                       )}
                     </div>
 
@@ -330,101 +291,47 @@ export function Contact() {
                         type="tel"
                         name="phone"
                         value={formData.phone}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                          const onlyNums = e.target.value.replace(/[^0-9]/g, "");
+                          if (onlyNums.length <= 11) {
+                            e.target.value = onlyNums;
+                            handleChange(e);
+                          }
+                        }}
+                        inputMode="numeric"
                         className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors ${
                           formErrors.phone
                             ? "border-red-500 focus:border-red-500"
                             : "border-orange-500/30 focus:border-orange-500"
                         }`}
-                        placeholder="(63+) XXX-XXX-XXXX"
+                        placeholder="(09+) XX-XXX-XXXX"
                       />
                       {formErrors.phone && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {formErrors.phone}
-                        </p>
+                        <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
                       )}
                     </div>
-                  </div>
-
-                  {/* Class Type */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-300">
-                      Class Type *
-                    </label>
-                    <select
-                      name="classType"
-                      value={formData.classType}
-                      onChange={(e) => {
-                        setFormData((prev) => ({ ...prev, classType: e.target.value, scheduleId: "" }));
-                        if (formErrors.classType) {
-                          setFormErrors((prev) => { const n = { ...prev }; delete n.classType; return n; });
-                        }
-                      }}
-                      className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors ${
-                        formErrors.classType
-                          ? "border-red-500 focus:border-red-500"
-                          : "border-orange-500/30 focus:border-orange-500"
-                      }`}
-                    >
-                      <option value="">Select a class</option>
-                      {classTypes.map((type) => (
-                        <option key={type} value={type}>
-                          {type}
-                        </option>
-                      ))}
-                    </select>
-                    {formErrors.classType && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {formErrors.classType}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Schedule Slot (day + time) */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-gray-300">
-                      Schedule Slot *
-                    </label>
-                    <select
-                      name="scheduleId"
-                      value={formData.scheduleId}
-                      onChange={handleChange}
-                      disabled={!formData.classType}
-                      className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors disabled:opacity-40 ${
-                        formErrors.scheduleId
-                          ? "border-red-500 focus:border-red-500"
-                          : "border-orange-500/30 focus:border-orange-500"
-                      }`}
-                    >
-                      <option value="">
-                        {formData.classType ? "Select a schedule" : "Choose a class type first"}
-                      </option>
-                      {sortedSlots.map((slot) => (
-                        <option key={slot.id} value={String(slot.id)}>
-                          {slot.day} {slot.time} — {slot.className} ({slot.room})
-                        </option>
-                      ))}
-                    </select>
-                    {formErrors.scheduleId && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {formErrors.scheduleId}
-                      </p>
-                    )}
                   </div>
 
                   {/* Message */}
                   <div>
                     <label className="block text-sm font-medium mb-2 text-gray-300">
-                      Additional Message (Optional)
+                      Message / Concern *
                     </label>
                     <textarea
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      rows={4}
-                      className="w-full bg-black border border-orange-500/30 rounded-lg px-4 py-3 focus:border-orange-500 focus:outline-none transition-colors resize-none"
-                      placeholder="Any special requests or questions?"
+                      rows={5}
+                      className={`w-full bg-black border rounded-lg px-4 py-3 focus:outline-none transition-colors resize-none ${
+                        formErrors.message
+                          ? "border-red-500 focus:border-red-500"
+                          : "border-orange-500/30 focus:border-orange-500"
+                      }`}
+                      placeholder="How can we help you today?"
                     />
+                    {formErrors.message && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.message}</p>
+                    )}
                   </div>
 
                   {/* Submit Error */}
@@ -441,12 +348,12 @@ export function Contact() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Booking...
+                        Sending...
                       </>
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        Book Class
+                        Send Message
                       </>
                     )}
                   </button>
@@ -456,57 +363,6 @@ export function Contact() {
           </div>
         </div>
       </section>
-
-      {/* Free Trial Modal */}
-      {showFreeTrial && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-gradient-to-br from-gray-900 to-black border border-orange-500/30 rounded-2xl p-8 max-w-md w-full relative"
-          >
-            <button
-              onClick={() => setShowFreeTrial(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-            >
-              ✕
-            </button>
-            <h3 className="text-2xl font-bold mb-4">
-              Start Your <span className="text-orange-500">Free Trial</span>
-            </h3>
-            <p className="text-gray-400 mb-6">
-              Experience Ember Gym for free! No credit card required. Your free trial includes:
-            </p>
-            <ul className="space-y-2 mb-6 text-gray-300">
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                Full gym access for 7 days
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                2 complimentary group classes
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                1 personal training consultation
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                Nutrition assessment
-              </li>
-            </ul>
-            <button
-              onClick={() => setShowFreeTrial(false)}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-600 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-orange-500/50 transition-all"
-            >
-              Claim Free Trial
-            </button>
-            <p className="text-center text-sm text-gray-500 mt-4">
-              No commitment. Cancel anytime.
-            </p>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }

@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use HasApiTokens, Notifiable;
     use HasApiTokens;
 
     protected $table = 'users';
@@ -17,10 +20,25 @@ class User extends Authenticatable
         'email',
         'phone',
         'password',
+        'role',
+        'membership_plan',
+        'membership_expires_at',
+        'membership_status',
+        'membership',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    protected $casts = [
+        'membership_expires_at' => 'datetime',
+        'email_verified_at' => 'datetime',
+    ];
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

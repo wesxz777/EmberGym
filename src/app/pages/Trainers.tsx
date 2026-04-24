@@ -12,7 +12,6 @@ interface Trainer {
   experience: string;
   bio: string;
   image: string;
-  rating: number;
   clients: number;
 }
 
@@ -26,9 +25,8 @@ export function Trainers() {
       specialties: ["Vinyasa Yoga", "Power Yoga", "Meditation", "Flexibility"],
       certifications: ["RYT-500", "Mindfulness Coach", "Nutrition Cert"],
       experience: "8 years",
-      bio: "Sarah brings a holistic approach to fitness, combining traditional yoga practices with modern strength training techniques.",
-      image: "",
-      rating: 4.9,
+      bio: "Joana brings a holistic approach to fitness, combining traditional yoga practices with modern strength training techniques.",
+      image: "public\\TrainerImg\\HernandezTrainer.png",
       clients: 150,
     },
     {
@@ -38,9 +36,8 @@ export function Trainers() {
       specialties: ["HIIT", "Functional Training", "Weight Loss", "Conditioning"],
       certifications: ["NASM-CPT", "CrossFit Level 2", "TRX Certified"],
       experience: "10 years",
-      bio: "Mike specializes in high-intensity training programs that deliver real results in minimal time.",
-      image: "",
-      rating: 5.0,
+      bio: "Estor specializes in high-intensity training programs that deliver real results in minimal time.",
+      image: "public\\TrainerImg\\EstorTrainer.jpg",
       clients: 200,
     },
     {
@@ -50,9 +47,8 @@ export function Trainers() {
       specialties: ["Powerlifting", "Bodybuilding", "Strength Training", "Nutrition"],
       certifications: ["HOPE TEACHER"],
       experience: "12 years",
-      bio: "Alex has coached numerous athletes to championship levels and specializes in building lean muscle mass.",
-      image: "",
-      rating: 4.8,
+      bio: "I has coached numerous athletes to championship levels and specializes in building lean muscle mass.",
+      image: "public\\TrainerImg\\IgorTrainer.png",
       clients: 180,
     },
   
@@ -131,12 +127,6 @@ export function Trainers() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
-                    
-                    {/* Rating Badge */}
-                    <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm px-3 py-2 rounded-full flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-semibold">{trainer.rating}</span>
-                    </div>
 
                     {/* Name & Role */}
                     <div className="absolute bottom-4 left-4 right-4">
@@ -179,7 +169,6 @@ export function Trainers() {
                     {/* Certifications */}
                     <div className="mb-4">
                       <h4 className="text-sm font-semibold mb-2 text-gray-300 flex items-center gap-2">
-                        <Award className="w-4 h-4 text-orange-500" />
                         Certifications
                       </h4>
                       <div className="flex flex-wrap gap-2">
@@ -193,19 +182,7 @@ export function Trainers() {
                         ))}
                       </div>
                     </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <button className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 py-3 rounded-lg font-semibold hover:shadow-lg hover:shadow-orange-500/50 transition-all">
-                        Book Session
-                      </button>
-                      <button className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                        <Instagram className="w-5 h-5" />
-                      </button>
-                      <button className="bg-gray-800 p-3 rounded-lg hover:bg-gray-700 transition-colors">
-                        <Mail className="w-5 h-5" />
-                      </button>
-                    </div>
+                    
                   </div>
                 </motion.div>
               ))}

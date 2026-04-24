@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   X,
   User,
@@ -14,9 +15,14 @@ import {
   Zap,
   Crown,
   Dumbbell,
+  Download,
+  Loader2,
+  Calendar,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 export type ProfileTab = "profile" | "password" | "membership";
 
@@ -25,6 +31,11 @@ interface ProfileModalProps {
   onClose: () => void;
   defaultTab?: ProfileTab;
 }
+
+// 🔥 HELPER: Auto-Capitalization for names
+const toTitleCase = (str: string) => {
+  return str.replace(/\b\w/g, (char) => char.toUpperCase());
+};
 
 /* ─── Password strength helper ─────────────────────────────── */
 function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
@@ -45,52 +56,9 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
   return { score, ...map[score] };
 }
 
-/* ─── Membership plans ──────────────────────────────────────── */
-const plans = [
-  {
-    id: "Basic" as const,
-    name: "Basic",
-    price: "$29",
-    icon: Dumbbell,
-    color: "from-gray-700 to-gray-800",
-    border: "border-gray-600",
-    activeBorder: "border-gray-400",
-    badge: "bg-gray-700 text-gray-300",
-    perks: ["Access to gym floor", "2 group classes/week", "Locker room access"],
-  },
-  {
-    id: "Pro" as const,
-    name: "Pro",
-    price: "$59",
-    icon: Zap,
-    color: "from-orange-600 to-red-700",
-    border: "border-orange-500/30",
-    activeBorder: "border-orange-500",
-    badge: "bg-orange-500/20 text-orange-400",
-    perks: ["Everything in Basic", "Unlimited group classes", "1 PT session/month", "Sauna access"],
-  },
-  {
-    id: "Elite" as const,
-    name: "Elite",
-    price: "$99",
-    icon: Crown,
-    color: "from-yellow-600 to-amber-700",
-    border: "border-yellow-500/30",
-    activeBorder: "border-yellow-400",
-    badge: "bg-yellow-500/20 text-yellow-400",
-    perks: [
-      "Everything in Pro",
-      "4 PT sessions/month",
-      "Nutrition coaching",
-      "Priority booking",
-      "Guest passes",
-    ],
-  },
-];
-
 /* ─── Main component ────────────────────────────────────────── */
 export function ProfileModal({ isOpen, onClose, defaultTab = "profile" }: ProfileModalProps) {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth(); // Extracted logout
   const [activeTab, setActiveTab] = useState<ProfileTab>(defaultTab);
 
   // Sync tab when modal opens with a different default
@@ -189,8 +157,9 @@ export function ProfileModal({ isOpen, onClose, defaultTab = "profile" }: Profil
                     transition={{ duration: 0.18 }}
                   >
                     {activeTab === "profile"    && <EditProfileTab user={user} updateUser={updateUser} />}
-                    {activeTab === "password"   && <ChangePasswordTab />}
-                    {activeTab === "membership" && <MembershipTab user={user} updateUser={updateUser} />}
+                    {/* Pass onClose and logout into ChangePassword so it can act safely */}
+                    {activeTab === "password"   && <ChangePasswordTab onClose={onClose} logout={logout} />}
+                    {activeTab === "membership" && <MembershipTab user={user} onClose={onClose} />}
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -215,14 +184,30 @@ function EditProfileTab({
     firstName: user?.firstName ?? "",
     lastName: user?.lastName ?? "",
     email: user?.email ?? "",
-    phone: user?.phone ?? "",
+    phone: user?.phone ?? "+63", // Default prefix 
   });
+  
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    updateUser(form);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const response = await axios.put('/api/user/update', form, {
+        withCredentials: true
+      });
+
+      if (response.data) {
+        updateUser(form);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      }
+    } catch (error: any) {
+      console.error("Failed to update profile:", error);
+      alert("Failed to save changes. Please check your connection.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -241,7 +226,11 @@ function EditProfileTab({
             <input
               type="text"
               value={form.firstName}
-              onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+              onChange={(e) => {
+                // 🔥 FIX: Clean and Auto-Capitalize
+                const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
+                setForm({ ...form, firstName: toTitleCase(cleanValue) });
+              }}
               className="w-full bg-gray-900 border border-gray-700 focus:border-orange-500 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white outline-none transition-colors"
               placeholder="First name"
             />
@@ -256,7 +245,11 @@ function EditProfileTab({
             <input
               type="text"
               value={form.lastName}
-              onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+              onChange={(e) => {
+                // 🔥 FIX: Clean and Auto-Capitalize
+                const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
+                setForm({ ...form, lastName: toTitleCase(cleanValue) });
+              }}
               className="w-full bg-gray-900 border border-gray-700 focus:border-orange-500 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white outline-none transition-colors"
               placeholder="Last name"
             />
@@ -286,9 +279,16 @@ function EditProfileTab({
             <input
               type="tel"
               value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              onChange={(e) => {
+                // 🔥 FIX: Lock +63 and restrict to numbers only
+                let val = e.target.value;
+                if (!val.startsWith("+63")) val = "+63"; 
+                const digits = val.slice(3).replace(/\D/g, ""); 
+                const limitedDigits = digits.slice(0, 10); 
+                setForm({ ...form, phone: "+63" + limitedDigits });
+              }}
               className="w-full bg-gray-900 border border-gray-700 focus:border-orange-500 rounded-lg pl-9 pr-4 py-2.5 text-sm text-white outline-none transition-colors"
-              placeholder="+1 (555) 000-0000"
+              placeholder="+63 9XX XXX XXXX"
             />
           </div>
         </div>
@@ -296,13 +296,19 @@ function EditProfileTab({
 
       <button
         onClick={handleSave}
+        disabled={isSaving}
         className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all ${
           saved
             ? "bg-green-600/20 border border-green-500/40 text-green-400"
-            : "bg-gradient-to-r from-orange-500 to-red-600 hover:shadow-lg hover:shadow-orange-500/30"
+            : "bg-gradient-to-r from-orange-500 to-red-600 text-white hover:shadow-lg hover:shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         }`}
       >
-        {saved ? (
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Saving...
+          </>
+        ) : saved ? (
           <>
             <Check className="w-4 h-4" />
             Changes Saved!
@@ -319,22 +325,42 @@ function EditProfileTab({
 }
 
 /* ─── Change Password Tab ───────────────────────────────────── */
-function ChangePasswordTab() {
+function ChangePasswordTab({ onClose, logout }: { onClose: () => void, logout: () => void }) {
   const [form, setForm] = useState({ current: "", newPw: "", confirm: "" });
   const [show, setShow] = useState({ current: false, newPw: false, confirm: false });
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const navigate = useNavigate();
   const strength = getPasswordStrength(form.newPw);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setError("");
     if (!form.current) { setError("Please enter your current password."); return; }
     if (form.newPw.length < 8) { setError("New password must be at least 8 characters."); return; }
     if (form.newPw !== form.confirm) { setError("Passwords do not match."); return; }
-    setSaved(true);
-    setForm({ current: "", newPw: "", confirm: "" });
-    setTimeout(() => setSaved(false), 2500);
+
+    setIsSaving(true);
+
+    try {
+     await axios.put('/api/user/password', { // 🔥 NEW, PROTECTED endpoint in UserController
+      current: form.current,
+      newPw: form.newPw
+      }, { withCredentials: true });
+
+      // 🔥 FIX: Cleanly resolve the modal and force re-authentication for security
+      setSaved(true);
+      setTimeout(() => {
+        onClose(); // Close modal
+        logout();  // Clear auth context
+        navigate('/login'); // Send back to login
+      }, 1500);
+
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to update password.");
+      setIsSaving(false);
+    } 
   };
 
   const field = (
@@ -369,7 +395,7 @@ function ChangePasswordTab() {
     <div className="p-6 space-y-5">
       <div>
         <h3 className="font-semibold text-white mb-1">Change Password</h3>
-        <p className="text-xs text-gray-500">Choose a strong password to keep your account secure.</p>
+        <p className="text-xs text-gray-500">Choose a strong password to keep your account secure. You will be asked to log in again after changing it.</p>
       </div>
 
       <div className="space-y-4">
@@ -444,117 +470,189 @@ function ChangePasswordTab() {
 
       <button
         onClick={handleSave}
+        disabled={isSaving}
         className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all ${
           saved
             ? "bg-green-600/20 border border-green-500/40 text-green-400"
-            : "bg-gradient-to-r from-orange-500 to-red-600 hover:shadow-lg hover:shadow-orange-500/30"
+            : "bg-gradient-to-r from-orange-500 to-red-600 text-white hover:shadow-lg hover:shadow-orange-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
         }`}
       >
-        {saved ? (
-          <><Check className="w-4 h-4" /> Password Updated!</>
+        {isSaving ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Updating...
+          </>
+        ) : saved ? (
+          <>
+            <Check className="w-4 h-4" />
+            Password Updated!
+          </>
         ) : (
-          <><ShieldCheck className="w-4 h-4" /> Update Password</>
+          <>
+            <ShieldCheck className="w-4 h-4" />
+            Update Password
+          </>
         )}
       </button>
     </div>
   );
 }
 
-/* ─── Membership Tab ────────────────────────────────────────── */
+/* ─── Manage Membership & Billing Tab ───────────────────────── */
 function MembershipTab({
   user,
-  updateUser,
+  onClose,
 }: {
   user: ReturnType<typeof useAuth>["user"] & object;
-  updateUser: ReturnType<typeof useAuth>["updateUser"];
+  onClose: () => void;
 }) {
-  const current = user?.membership ?? "Basic";
-  const [selected, setSelected] = useState<"Basic" | "Pro" | "Elite">(current);
-  const [saved, setSaved] = useState(false);
+  const navigate = useNavigate();
+  const [payments, setPayments] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  
+  const currentPlan = user?.membership ?? null;
 
-  const handleSave = () => {
-    updateUser({ membership: selected });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await axios.get('/api/payments/history');
+        if (response.data.success) {
+          setPayments(response.data.payments);
+        }
+      } catch (error) {
+        console.error("Failed to fetch payment history", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
+
+  const handleDownloadReceipt = async (paymentId: number, transactionId: string) => {
+    setDownloadingId(paymentId);
+    try {
+      const response = await axios.get(`/api/payments/${paymentId}/receipt`, {
+        responseType: 'blob',
+        headers: { 'Accept': 'application/pdf' }
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `EmberGym_Receipt_${transactionId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert("Failed to download receipt.");
+    } finally {
+      setDownloadingId(null);
+    }
   };
 
-  const changed = selected !== current;
+  const getPlanDetails = (plan: string) => {
+    if (plan === "Pro") return { icon: Zap, color: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/20" };
+    if (plan === "Elite") return { icon: Crown, color: "text-yellow-500", bg: "bg-yellow-500/10", border: "border-yellow-500/20" };
+    return { icon: Dumbbell, color: "text-gray-300", bg: "bg-gray-800", border: "border-gray-700" };
+  };
+
+  const planDetails = currentPlan ? getPlanDetails(currentPlan) : null;
+  const Icon = planDetails?.icon || Dumbbell;
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="p-6 space-y-6">
+      
+      {/* Current Plan Section */}
       <div>
-        <h3 className="font-semibold text-white mb-1">Membership Plan</h3>
-        <p className="text-xs text-gray-500">
-          You're currently on the{" "}
-          <span className="text-orange-400 font-medium">{current}</span> plan.
-          {" "}Select a plan below to upgrade or downgrade.
-        </p>
-      </div>
-
-      <div className="space-y-3">
-        {plans.map((plan) => {
-          const Icon = plan.icon;
-          const isSelected = selected === plan.id;
-          const isCurrent = current === plan.id;
-          return (
+        <h3 className="font-semibold text-white mb-3">Current Plan</h3>
+        {!currentPlan ? (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 text-center">
+            <p className="text-sm text-gray-400 mb-4">You don't have an active membership yet.</p>
             <button
-              key={plan.id}
-              onClick={() => { setSelected(plan.id); setSaved(false); }}
-              className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
-                isSelected ? plan.activeBorder + " bg-gray-900/80" : plan.border + " bg-gray-900/30 hover:bg-gray-900/60"
-              }`}
+              onClick={() => { onClose(); navigate("/membership"); }}
+              className="bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2 rounded-lg text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all"
             >
-              <div className="flex items-start gap-4">
-                <div className={`bg-gradient-to-br ${plan.color} p-2.5 rounded-lg shrink-0`}>
-                  <Icon className="w-5 h-5 text-white" />
+              View Plans
+            </button>
+          </div>
+        ) : (
+          <div className={`border rounded-xl p-5 ${planDetails?.bg} ${planDetails?.border}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`p-3 rounded-lg bg-black/50 ${planDetails?.color}`}>
+                  <Icon className="w-6 h-6" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-semibold text-white">{plan.name}</span>
-                    {isCurrent && (
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${plan.badge}`}>
-                        Current
-                      </span>
-                    )}
-                    <span className="ml-auto font-bold text-white">{plan.price}<span className="text-gray-500 font-normal text-xs">/mo</span></span>
-                  </div>
-                  <ul className="space-y-0.5">
-                    {plan.perks.map((perk) => (
-                      <li key={perk} className="flex items-center gap-1.5 text-xs text-gray-400">
-                        <Check className="w-3 h-3 text-orange-500 shrink-0" />
-                        {perk}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className={`w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all ${
-                  isSelected ? "border-orange-500 bg-orange-500" : "border-gray-600"
-                }`}>
-                  {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
+                <div>
+                  <p className="text-xs text-gray-400 font-medium uppercase tracking-wider mb-0.5">Active Membership</p>
+                  <p className={`text-xl font-bold ${planDetails?.color}`}>{currentPlan}</p>
                 </div>
               </div>
-            </button>
-          );
-        })}
+              <button
+                onClick={() => { onClose(); navigate("/membership"); }}
+                className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/10 rounded-lg text-sm text-white font-medium transition-colors"
+              >
+                Change Plan
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
-      <button
-        onClick={handleSave}
-        disabled={!changed}
-        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-all ${
-          saved
-            ? "bg-green-600/20 border border-green-500/40 text-green-400"
-            : changed
-              ? "bg-gradient-to-r from-orange-500 to-red-600 hover:shadow-lg hover:shadow-orange-500/30"
-              : "bg-gray-800 text-gray-500 cursor-not-allowed"
-        }`}
-      >
-        {saved ? (
-          <><Check className="w-4 h-4" /> Plan Updated!</>
+      {/* Billing History Section */}
+      <div>
+        <h3 className="font-semibold text-white mb-3">Billing History</h3>
+        
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+          </div>
+        ) : payments.length === 0 ? (
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 text-center">
+            <FileText className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+            <p className="text-sm text-gray-400">No payment history found.</p>
+          </div>
         ) : (
-          <><CreditCard className="w-4 h-4" /> {changed ? `Switch to ${selected}` : "No Changes"}</>
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+            {payments.map((payment) => (
+              <div key={payment.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-gray-800 p-2.5 rounded-lg shrink-0">
+                    <Calendar className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-white text-sm capitalize">Ember Gym {payment.plan}</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                      <span>{new Date(payment.paid_at).toLocaleDateString("en-PH", { year: "numeric", month: "short", day: "numeric" })}</span>
+                      <span>•</span>
+                      <span className="font-mono bg-black px-1.5 py-0.5 rounded text-gray-500">{payment.transaction_id}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto border-t sm:border-t-0 border-gray-800 pt-3 sm:pt-0">
+                  <span className="font-bold text-white">₱{(payment.total_amount / 100).toFixed(2)}</span>
+                  <button
+                    onClick={() => handleDownloadReceipt(payment.id, payment.transaction_id)}
+                    disabled={downloadingId === payment.id}
+                    className="flex items-center gap-1.5 text-xs font-medium text-orange-500 hover:text-orange-400 bg-orange-500/10 hover:bg-orange-500/20 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {downloadingId === payment.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    {downloadingId === payment.id ? "Downloading..." : "PDF Receipt"}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
-      </button>
+      </div>
+
     </div>
   );
 }

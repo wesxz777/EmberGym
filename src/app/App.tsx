@@ -1,16 +1,15 @@
-import { RouterProvider } from "react-router";
-import { router } from "./routes";
-import { AuthProvider } from "./context/AuthContext";
-import { BookingProvider } from "./context/BookingContext";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import { RouterProvider } from 'react-router-dom';
+
+import { AuthProvider } from './context/AuthContext';
+import { BookingProvider } from './context/BookingContext'; // 🔥 ADDED THIS BACK!
+import { router } from './routes';
 
 export default function App() {
   return (
     <AuthProvider>
-      <BookingProvider>
-        <RouterProvider router={router} />
-      </BookingProvider>
+        <BookingProvider> {/* 🔥 WRAPPED IT HERE! */}
+          <RouterProvider router={router} />
+        </BookingProvider>
     </AuthProvider>
   );
 }

@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Quote, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 export function Gallery() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
@@ -94,34 +96,10 @@ export function Gallery() {
     },
   ];
 
-  const [apiFacilityImages, setApiFacilityImages] = useState<any[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/gallery')
-      .then((res) => res.json())
-      .then((data) => {
-        if (cancelled) return;
-        if (Array.isArray(data) && data.length > 0) {
-          setApiFacilityImages(
-            data.map((r: any) => {
-              let url = r.url || r.image_url || r.imageUrl || '';
-              if (url.startsWith('/')) url = `/EmberGym${url}`;
-              return { id: r.id, url, category: r.category || 'Gallery', title: r.title || r.description || '' };
-            })
-          );
-        }
-      })
-      .catch(() => {
-        // ignore network errors, keep local fallback
-      });
-    return () => { cancelled = true; };
-  }, []);
-
   const categories = ["Equipment", "Classes", "Training", "Facility"];
 
-  const sourceImages = apiFacilityImages.length ? apiFacilityImages : facilityImages;
-  const filteredImages = sourceImages.filter((img) => img.category === selectedCategory);
+  // Filter based directly on the local images
+  const filteredImages = facilityImages.filter((img) => img.category === selectedCategory);
 
   const sliderSettings = {
     dots: true,

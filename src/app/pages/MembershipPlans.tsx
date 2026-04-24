@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { Check, X, Zap, Crown, Star, Clock } from "lucide-react";
 import { motion } from "motion/react";
 import * as Progress from "@radix-ui/react-progress";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+
 
 interface Plan {
   id: number;
@@ -15,7 +19,11 @@ interface Plan {
 }
 
 export function MembershipPlans() {
+  const navigate = useNavigate();
+  const { isLoggedIn, user, updateUser } = useAuth();
   const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -94,6 +102,52 @@ export function MembershipPlans() {
     Basic: ["✓", "✓", "2/month", "—", "—", "—", "—", "—", "—", "—", "—"],
     Pro: ["✓", "✓", "Unlimited", "2/month", "✓", "2/month", "—", "—", "✓", "—", "—"],
     Elite: ["✓", "✓", "Unlimited", "4/month", "✓", "Unlimited", "✓", "✓", "✓", "✓", "✓"],
+  };
+
+  const handleGetStarted = (planId: number) => {
+    const planName = plans[planId - 1].name.toLowerCase();
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+    // Prevent purchasing if user already has this active membership
+    if (isUserPlanActive(plans[planId - 1].name)) {
+      return;
+    }
+    navigate(`/checkout?plan=${planName}`);
+  };
+
+  const handleCancelPlan = async () => {
+    setCancelLoading(true);
+    try {
+      // 1. The Security Handshake
+      await axios.get("http://localhost:8000/sanctum/csrf-cookie");
+
+      // 2. The secure request (using standard axios and the /api/ prefix)
+      const response = await axios.post("/api/payments/cancel");
+
+      if (response.data.success) {
+        // Update user context to remove membership
+        updateUser({
+          membership: null,
+        });
+        setShowCancelModal(false);
+      } else {
+        alert(response.data.message || "Failed to cancel plan");
+      }
+    } catch (error: any) {
+      alert(
+        error.response?.data?.message ||
+          "An error occurred while cancelling your plan"
+      );
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  const isUserPlanActive = (planName: string): boolean => {
+    if (!user?.membership) return false;
+    return user.membership.toLowerCase() === planName.toLowerCase();
   };
 
   return (
@@ -188,14 +242,21 @@ export function MembershipPlans() {
 
                     {/* Button */}
                     <button
-                      onClick={() => setSelectedPlan(plan.id)}
+                      onClick={() =>
+                        isUserPlanActive(plan.name)
+                          ? setShowCancelModal(true)
+                          : handleGetStarted(plan.id)
+                      }
+                      disabled={isUserPlanActive(plan.name) ? false : false}
                       className={`w-full py-4 rounded-lg font-semibold transition-all ${
-                        plan.popular
+                        isUserPlanActive(plan.name)
+                          ? "bg-red-600 hover:bg-red-700 cursor-pointer"
+                          : plan.popular
                           ? "bg-gradient-to-r from-orange-500 to-red-600 hover:shadow-lg hover:shadow-orange-500/50"
                           : "bg-gray-800 hover:bg-gray-700"
                       }`}
                     >
-                      {selectedPlan === plan.id ? "Selected ✓" : plan.buttonText}
+                      {isUserPlanActive(plan.name) ? "Cancel" : plan.buttonText}
                     </button>
                   </div>
                 </motion.div>
@@ -298,6 +359,61 @@ export function MembershipPlans() {
           </div>
         </div>
       </section>
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelModal && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          onClick={() => !cancelLoading && setShowCancelModal(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-gradient-to-br from-gray-900 to-black border-2 border-red-500/30 rounded-2xl p-8 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-2xl font-bold mb-4 text-red-500">Cancel Membership</h2>
+            <div className="space-y-4 mb-6">
+              <p className="text-gray-300">
+                Are you sure you want to cancel your membership?
+              </p>
+              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                <p className="text-sm text-red-300 font-semibold mb-2">Important Notice:</p>
+                <p className="text-sm text-red-200">
+                  This action is <span className="font-bold">NOT REFUNDABLE</span>. Any remaining balance or benefits on your current plan will be forfeited.
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                disabled={cancelLoading}
+                className="flex-1 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Keep Plan
+              </button>
+              <button
+                onClick={handleCancelPlan}
+                disabled={cancelLoading}
+                className="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {cancelLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  "Confirm Cancel"
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 }

@@ -63,14 +63,21 @@ export function ChatBot() {
       // Use fetch because it natively supports streaming, unlike Axios
       // Use fetch because it natively supports streaming, unlike Axios
       const response = await fetch('https://embergym.onrender.com/api/chatbot', {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json",
-        "Accept": "text-event-stream",
-        "X-XSRF-TOKEN": decodeURIComponent(csrfToken || ""),
-    },
-    body: JSON.stringify({ messages: contextWindow }),
-});
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "text-event-stream",
+            "X-XSRF-TOKEN": decodeURIComponent(csrfToken || ""),
+        },
+        body: JSON.stringify({ messages: contextWindow }),
+      });
+
+      // 🔥 THE INTERCEPTOR: Catch our Laravel JSON Trap!
+      if (!response.ok) {
+          const errorData = await response.json();
+          console.error("🚨 LARAVEL CRASH REPORT:", errorData);
+          throw new Error("Backend crashed! Check the console.");
+      }
 
       if (!response.body) throw new Error("No response body");
 

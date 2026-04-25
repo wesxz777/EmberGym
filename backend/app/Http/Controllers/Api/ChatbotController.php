@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse; // 🔥 REQUIRED FOR STREAMING
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Log;
 
 class ChatbotController extends Controller
@@ -44,7 +44,6 @@ PROMPT;
 
     public function chat(Request $request)
     {
-        // Close session early to prevent blocking other requests while the stream runs
         if (session_status() === PHP_SESSION_ACTIVE) {
             session_write_close();
         }
@@ -67,30 +66,51 @@ PROMPT;
             ];
         }
 
+        // 🔥 UPGRADE 1: Switch to the lightning-fast Llama 3 model
         $payload = [
-            'model' => 'mistral',
+            'model' => 'llama3-8b-8192', 
             'messages' => $formattedMessages,
-            'stream' => true, // 🔥 TELL OLLAMA TO STREAM
-            'options' => [
-                'temperature' => 0.1,
-                'num_ctx' => 2048,
-            ],
+            'stream' => true, 
+            'temperature' => 0.1,
+            'max_tokens' => 1024,
         ];
 
         $response = new StreamedResponse(function () use ($payload) {
-            $ch = curl_init('http://localhost:11434/api/chat');
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false); // false means echo immediately
+            // 🔥 UPGRADE 2: Point to the Cloud API instead of your local laptop
+            $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
             curl_setopt($ch, CURLOPT_TIMEOUT, 180);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            
+            // 🔥 UPGRADE 3: Inject your secure API key from Render's environment variables
+            $apiKey = env('GROQ_API_KEY');
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . $apiKey
+            ]);
+            
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
             curl_setopt($ch, CURLOPT_POST, true);
 
-            // 🔥 MAGIC: Intercept each word from Ollama and forward it to React
+            // 🔥 UPGRADE 4: The Sneaky Translator. Converts Groq data into Ollama data!
             curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($curl, $data) {
                 $lines = explode("\n", trim($data));
                 foreach($lines as $line) {
-                    if (!empty($line)) {
-                        echo "data: " . $line . "\n\n"; // Format as standard SSE
+                    if (strpos($line, 'data: ') === 0) {
+                        $jsonString = substr($line, 6);
+                        
+                        // Ignore the end-of-stream signal
+                        if (trim($jsonString) === '[DONE]') continue;
+
+                        $parsed = json_decode($jsonString, true);
+                        
+                        // Extract the text chunk from Groq
+                        if (isset($parsed['choices'][0]['delta']['content'])) {
+                            $chunk = $parsed['choices'][0]['delta']['content'];
+                            
+                            // Repackage it exactly how your React code expects Ollama to look
+                            $fakeOllama = json_encode(['message' => ['content' => $chunk]]);
+                            echo "data: " . $fakeOllama . "\n\n"; 
+                        }
                     }
                 }
                 
@@ -101,12 +121,11 @@ PROMPT;
 
             curl_exec($ch);
             if (curl_error($ch)) {
-                Log::error('Ollama stream error: ' . curl_error($ch));
+                Log::error('Cloud AI stream error: ' . curl_error($ch));
             }
             curl_close($ch);
         });
 
-        // Set Headers required for the browser to accept continuous streams
         $response->headers->set('Content-Type', 'text/event-stream');
         $response->headers->set('Cache-Control', 'no-cache');
         $response->headers->set('Connection', 'keep-alive');

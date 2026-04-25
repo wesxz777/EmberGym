@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Bot } from "lucide-react";
+import api from "../../config/api";
 
 interface Message {
   role: "user" | "assistant";
@@ -60,15 +61,16 @@ export function ChatBot() {
       const csrfToken = document.cookie.split("; ").find((row) => row.startsWith("XSRF-TOKEN="))?.split("=")[1];
 
       // Use fetch because it natively supports streaming, unlike Axios
-      const response = await api.post('/api/chatbot', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "text-event-stream",
-          "X-XSRF-TOKEN": decodeURIComponent(csrfToken || ""),
-        },
-        body: JSON.stringify({ messages: contextWindow }),
-      });
+      // Use fetch because it natively supports streaming, unlike Axios
+      const response = await fetch('https://embergym.onrender.com/api/chatbot', {
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Accept": "text-event-stream",
+        "X-XSRF-TOKEN": decodeURIComponent(csrfToken || ""),
+    },
+    body: JSON.stringify({ messages: contextWindow }),
+});
 
       if (!response.body) throw new Error("No response body");
 

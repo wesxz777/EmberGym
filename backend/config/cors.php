@@ -16,10 +16,8 @@ return [
     */
 'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
-
-    // Add your exact React URLs here
-    'allowed_origins' => ['http://localhost:5500', 'http://127.0.0.1:5500'],
+    // Change this to explicitly allow your Vercel site
+    'allowed_origins' => ['https://ember-gym.vercel.app'], 
 
     'allowed_origins_patterns' => [],
 
@@ -29,6 +27,6 @@ return [
 
     'max_age' => 0,
 
-    // THIS IS THE CRUCIAL PART: Change this to true
+    // THIS IS CRITICAL FOR SANCTUM LOGIN
     'supports_credentials' => true,
 ];

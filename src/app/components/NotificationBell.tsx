@@ -60,8 +60,8 @@ export function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       // Configure axios to use your Sanctum configuration
-      const response = await api.get('/notifications', {
-        withCredentials: true, // Crucial for Sanctum auth
+      const response = await api.get('/api/notifications', {
+          withCredentials: true, // Crucial for Sanctum auth
       });
       
       // 🔥 SAFETY SHIELD 2: Force it to be an empty array if Laravel sends back weird data
@@ -74,8 +74,8 @@ export function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      await api.post('/notifications/mark-read', {}, {
-        withCredentials: true,
+      await api.post('/api/notifications/mark-read', {}, {
+          withCredentials: true,
       });
       // 🔥 SAFETY SHIELD 3: Only map if it's actually an array
       setNotifications(prev => Array.isArray(prev) ? prev.map(n => ({ ...n, read_at: new Date().toISOString() })) : []);

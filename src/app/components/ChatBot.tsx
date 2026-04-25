@@ -60,7 +60,7 @@ export function ChatBot() {
       const csrfToken = document.cookie.split("; ").find((row) => row.startsWith("XSRF-TOKEN="))?.split("=")[1];
 
       // Use fetch because it natively supports streaming, unlike Axios
-      const response = await fetch("/api/chatbot", {
+      const response = await api.post('/api/chatbot', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

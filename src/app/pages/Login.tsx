@@ -88,9 +88,10 @@ export function Login() {
           }
 
           // Pass the user data to AuthContext safely with fallbacks
-          login({
+         login({
             id: user?.id, 
-            firstName: user?.first_name || "Member",
+            // Look for first_name, then look for name, then default to "Member"
+            firstName: user?.first_name || user?.name || "Member",
             lastName: user?.last_name || "",
             email: user?.email || formData.email,
             phone: user?.phone || "",

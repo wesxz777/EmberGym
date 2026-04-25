@@ -18,9 +18,9 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isAdmin: boolean;
   isAuthLoading: boolean;
-  isLoggingOut: boolean; // <-- NEW: Tracks logout progress for UX
+  isLoggingOut: boolean;
   login: (user: AuthUser, token?: string) => void;
-  logout: () => Promise<void>; // <-- NEW: Now asynchronous
+  logout: () => Promise<void>;
   updateUser: (updates: Partial<AuthUser>) => void;
 }
 
@@ -62,13 +62,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             setUser({
-              id: fetchedUser.id,
-              firstName: fetchedUser.first_name,
-              lastName: fetchedUser.last_name,
-              email: fetchedUser.email,
-              phone: fetchedUser.phone,
+              id: fetchedUser?.id,
+              // 🔥 THE FIX: Look for first_name, then name, then fallback to "Member"
+              firstName: fetchedUser?.first_name || fetchedUser?.name || "Member",
+              // 🔥 THE FIX: Safe fallback for last_name
+              lastName: fetchedUser?.last_name || "",
+              email: fetchedUser?.email,
+              phone: fetchedUser?.phone || "",
               membership: membership as "Basic" | "Pro" | "Elite" | null,
-              role: fetchedUser.role,
+              role: fetchedUser?.role || "member",
             });
           }
         }
@@ -96,17 +98,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // --- UPGRADED LOGOUT FUNCTION ---
   const logout = async () => {
     setIsLoggingOut(true);
     try {
-      // 1. Tell Laravel to destroy the session cookie and revoke tokens
-      // (Adjust to "/logout" if your Laravel setup uses the default web route instead of API)
       await api.post("/api/logout").catch(() => api.post("/logout")); 
     } catch (error) {
       console.error("Error during server logout", error);
     } finally {
-      // 2. Wipe the frontend memory regardless of server response
       setUser(null);
       localStorage.removeItem("token");
       localStorage.removeItem("user");

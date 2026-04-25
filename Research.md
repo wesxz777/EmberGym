@@ -121,6 +121,7 @@ Booking Efficiency Dimensions - Descriptive Statistics
 | Accuracy | 4.13 | 0.64 | High |
 | Overall Booking Efficiency | 4.21 | 0.54 | Very High |
 
+
 Convenience as a Key Strength. The Convenience dimension received the highest efficiency rating of 4.33 (SD=0.41), indicating that students found the booking process easy to complete, well-integrated with their schedules, and accessible. The consistency of ratings (low SD of 0.41) shows broad agreement on this system strength. Kumar and Singh (2023) identify convenience in online booking systems as the single most influential factor in repeat usage and user satisfaction. This finding suggests that the EmberGym system successfully integrates booking functionality into student workflows with minimal friction or cognitive load.
 
 
@@ -175,6 +176,8 @@ Based on the analysis of data collected from 15 Grade 11 ICT students at the Uni
    5. The EmberGym system shows strong potential for adoption and continued success. The very high usability and efficiency ratings, combined with positive qualitative feedback, indicate that the system meets the needs and expectations of the Grade 11 ICT student population and is well-positioned for continued use and expansion.
 
 This research concludes that the EmberGym website and booking system demonstrate very high levels of both usability and efficiency when evaluated by Grade 11 ICT students at the University of Makati. The overall usability rating of 4.24 (Very High) and overall booking efficiency rating of 4.21 (Very High) provide quantitative evidence that the system successfully achieves its design objectives of being user-friendly and operationally efficient. 
+
+
 References
 
 Alsaif, N., & Makarim, M. A. (2021). Investigating the impact of system usability on user satisfaction in learning management systems among university students. Journal of Educational Technology & Society, 24(3), 156–170.

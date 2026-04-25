@@ -34,7 +34,6 @@ export function Login() {
   const validateForm = () => {
     const errors: Record<string, string> = {};
 
-    // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) {
       errors.email = "Email is required";
@@ -42,7 +41,6 @@ export function Login() {
       errors.email = "Please enter a valid email address";
     }
 
-    // Password validation
     if (!formData.password) {
       errors.password = "Password is required";
     } else if (formData.password.length < 6) {
@@ -58,7 +56,7 @@ export function Login() {
     
     if (validateForm()) {
       setIsLoading(true);
-      setFormErrors({}); // Clear old errors
+      setFormErrors({}); 
 
       try {
         const payload = {
@@ -67,30 +65,24 @@ export function Login() {
           remember_me: formData.rememberMe, 
         };
 
-        // 1. The Handshake
         await api.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
-        // 2. The Login 
         const response = await api.post("/login", payload);
 
         if (response.status === 200 || response.status === 204) {
           
-          // 3. Fetch the user profile
-          const userResponse = await api.get("/user"); 
+          // 🔥 THE FIX: Added /api/ so it hits the correct Laravel endpoint!
+          const userResponse = await api.get("/api/user"); 
           
-          // 4. Safely extract the user (sometimes Laravel wraps it in .user, sometimes it doesn't)
           const user = userResponse.data?.user || userResponse.data;
 
-          // 5. THE AI's FIX: Use Optional Chaining (?.) to prevent crashes!
           let membership = null;
           if (user?.membership_plan && user?.membership_plan !== 'none') {
             membership = user.membership_plan.charAt(0).toUpperCase() + user.membership_plan.slice(1);
           }
 
-          // Pass the user data to AuthContext safely with fallbacks
-         login({
+          login({
             id: user?.id, 
-            // Look for first_name, then look for name, then default to "Member"
             firstName: user?.first_name || user?.name || "Member",
             lastName: user?.last_name || "",
             email: user?.email || formData.email,
@@ -99,7 +91,6 @@ export function Login() {
             role: user?.role || "user",
           }, "sanctum-cookie-active"); 
 
-          // Redirect based on role safely
           const adminRoles = ["admin", "manager", "super_admin"];
           if (adminRoles.includes(user?.role)) {
             navigate("/admin");
@@ -145,7 +136,6 @@ export function Login() {
 
     setIsSendingReset(true);
     try {
-      // Cleaned up the URL to just point to the relative route
       await api.post("/forgot-password", { email: forgotEmail.trim() });
       setForgotSuccess("If that email exists, a password reset link has been sent.");
     } catch (error: any) {
@@ -168,7 +158,6 @@ export function Login() {
       [name]: type === "checkbox" ? checked : value,
     }));
     
-    // Clear error for this field
     if (formErrors[name]) {
       setFormErrors((prev) => {
         const newErrors = { ...prev };

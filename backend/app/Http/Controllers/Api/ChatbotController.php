@@ -92,7 +92,22 @@ public function chat(Request $request)
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
                 curl_setopt($ch, CURLOPT_POST, true);
 
+                // 🔥 THE UPGRADE: Catch Groq's complaints and print them to the chat!
                 curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($curl, $data) {
+                    $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+                    
+                    // If Groq throws an HTTP error, force it into the chat bubble!
+                    if ($httpCode >= 400) {
+                        $errorData = json_decode($data, true);
+                        $errorMsg = $errorData['error']['message'] ?? 'Unknown Groq Error (Check API Key)';
+                        $fakeOllama = json_encode(['message' => ['content' => "🚨 Groq API Error: " . $errorMsg]]);
+                        echo "data: " . $fakeOllama . "\n\n";
+                        if (ob_get_level() > 0) ob_flush();
+                        flush();
+                        return strlen($data);
+                    }
+
+                    // Otherwise, translate the stream normally
                     $lines = explode("\n", trim($data));
                     foreach($lines as $line) {
                         if (strpos($line, 'data: ') === 0) {

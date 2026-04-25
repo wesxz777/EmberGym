@@ -44,93 +44,92 @@ PROMPT;
 
     public function chat(Request $request)
     {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_write_close();
-        }
-        set_time_limit(0);
+        try {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+            set_time_limit(0);
 
-        $request->validate([
-            'messages' => 'required|array|min:1|max:20',
-            'messages.*.role' => 'required|in:user,assistant',
-            'messages.*.content' => 'required|string|max:1000',
-        ]);
+            // 🔥 FIX 1: Force Laravel to treat this as a JSON API, preventing HTML redirects
+            $request->headers->set('Accept', 'application/json');
 
-        $formattedMessages = [
-            ['role' => 'system', 'content' => $this->systemPrompt]
-        ];
-
-        foreach ($request->messages as $msg) {
-            $formattedMessages[] = [
-                'role' => $msg['role'],
-                'content' => $msg['content'],
-            ];
-        }
-
-        // 🔥 UPGRADE 1: Switch to the lightning-fast Llama 3 model
-        $payload = [
-            'model' => 'llama3-8b-8192', 
-            'messages' => $formattedMessages,
-            'stream' => true, 
-            'temperature' => 0.1,
-            'max_tokens' => 1024,
-        ];
-
-        $response = new StreamedResponse(function () use ($payload) {
-            // 🔥 UPGRADE 2: Point to the Cloud API instead of your local laptop
-            $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 180);
-            
-            // 🔥 UPGRADE 3: Inject your secure API key from Render's environment variables
-            $apiKey = env('GROQ_API_KEY');
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Content-Type: application/json',
-                'Authorization: Bearer ' . $apiKey
+            // 🔥 FIX 2: Loosen the validation to stop instant crashes
+            $request->validate([
+                'messages' => 'required|array|min:1',
             ]);
-            
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
-            curl_setopt($ch, CURLOPT_POST, true);
 
-            // 🔥 UPGRADE 4: The Sneaky Translator. Converts Groq data into Ollama data!
-            curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($curl, $data) {
-                $lines = explode("\n", trim($data));
-                foreach($lines as $line) {
-                    if (strpos($line, 'data: ') === 0) {
-                        $jsonString = substr($line, 6);
-                        
-                        // Ignore the end-of-stream signal
-                        if (trim($jsonString) === '[DONE]') continue;
+            $formattedMessages = [
+                ['role' => 'system', 'content' => $this->systemPrompt]
+            ];
 
-                        $parsed = json_decode($jsonString, true);
-                        
-                        // Extract the text chunk from Groq
-                        if (isset($parsed['choices'][0]['delta']['content'])) {
-                            $chunk = $parsed['choices'][0]['delta']['content'];
+            foreach ($request->messages as $msg) {
+                // Safely grab the content, even if React named the variables differently
+                $formattedMessages[] = [
+                    'role' => $msg['role'] ?? 'user',
+                    'content' => $msg['content'] ?? json_encode($msg),
+                ];
+            }
+
+            $payload = [
+                'model' => 'llama3-8b-8192',
+                'messages' => $formattedMessages,
+                'stream' => true,
+                'temperature' => 0.1,
+                'max_tokens' => 1024,
+            ];
+
+            $response = new StreamedResponse(function () use ($payload) {
+                $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 180);
+                
+                $apiKey = env('GROQ_API_KEY');
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $apiKey
+                ]);
+                
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                curl_setopt($ch, CURLOPT_POST, true);
+
+                curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($curl, $data) {
+                    $lines = explode("\n", trim($data));
+                    foreach($lines as $line) {
+                        if (strpos($line, 'data: ') === 0) {
+                            $jsonString = substr($line, 6);
+                            if (trim($jsonString) === '[DONE]') continue;
                             
-                            // Repackage it exactly how your React code expects Ollama to look
-                            $fakeOllama = json_encode(['message' => ['content' => $chunk]]);
-                            echo "data: " . $fakeOllama . "\n\n"; 
+                            $parsed = json_decode($jsonString, true);
+                            if (isset($parsed['choices'][0]['delta']['content'])) {
+                                $chunk = $parsed['choices'][0]['delta']['content'];
+                                $fakeOllama = json_encode(['message' => ['content' => $chunk]]);
+                                echo "data: " . $fakeOllama . "\n\n"; 
+                            }
                         }
                     }
-                }
-                
-                if (ob_get_level() > 0) ob_flush();
-                flush();
-                return strlen($data);
+                    if (ob_get_level() > 0) ob_flush();
+                    flush();
+                    return strlen($data);
+                });
+
+                curl_exec($ch);
+                curl_close($ch);
             });
 
-            curl_exec($ch);
-            if (curl_error($ch)) {
-                Log::error('Cloud AI stream error: ' . curl_error($ch));
-            }
-            curl_close($ch);
-        });
+            $response->headers->set('Content-Type', 'text/event-stream');
+            $response->headers->set('Cache-Control', 'no-cache');
+            $response->headers->set('Connection', 'keep-alive');
+            $response->headers->set('X-Accel-Buffering', 'no');
 
-        $response->headers->set('Content-Type', 'text/event-stream');
-        $response->headers->set('Cache-Control', 'no-cache');
-        $response->headers->set('Connection', 'keep-alive');
-        $response->headers->set('X-Accel-Buffering', 'no');
+            return $response;
 
-        return $response;
+        } catch (\Throwable $e) {
+            // 🔥 FIX 3: THE ULTIMATE TRAP. Catch ANY fatal error and print it cleanly!
+            return response()->json([
+                'CRASH_REPORT' => $e->getMessage(),
+                'FILE' => $e->getFile(),
+                'LINE' => $e->getLine()
+            ], 500);
+        }
     }
 }

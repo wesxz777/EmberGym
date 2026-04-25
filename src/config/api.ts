@@ -19,7 +19,7 @@ import axios from "axios";
 
 const api = axios.create({
   // IMPORTANT: Make sure this says localhost, not 127.0.0.1!
-  baseURL: "http://localhost:8000/api", 
+  baseURL: "https://embergym.onrender.com/api", 
   withCredentials: true, 
 });
 

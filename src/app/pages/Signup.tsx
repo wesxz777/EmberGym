@@ -44,7 +44,7 @@ export function Signup() {
     }));
 
     try {
-      const response = await axios.get("http://localhost:8000/api/check-email", {
+      const response = await axios.get("https://embergym.onrender.com/api/check-email", {
         params: { email },
       });
       setAvailability((prev) => ({
@@ -68,7 +68,7 @@ export function Signup() {
     }));
 
     try {
-      const response = await axios.get("http://localhost:8000/api/check-phone", {
+      const response = await axios.get("https://embergym.onrender.com/api/check-phone", {
         params: { phone },
       });
       setAvailability((prev) => ({
@@ -156,7 +156,7 @@ export function Signup() {
           password_confirmation: formData.confirmPassword,
         };
 
-        const response = await axios.post("http://localhost:8000/api/register", payload, {
+        const response = await axios.post("https://embergym.onrender.com/api/register", payload, {
          headers: {
            "Accept": "application/json",
            "Content-Type": "application/json"

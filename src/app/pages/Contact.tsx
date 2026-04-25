@@ -59,7 +59,7 @@ export function Contact() {
     setIsSubmitting(true);
     try {
       // 1. The Handshake (wakes up the security token)
-      await axios.get("http://localhost:8000/sanctum/csrf-cookie");
+      await axios.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
       // 2. The Payload matching our new ContactMessage model
       const payload = {
@@ -70,7 +70,7 @@ export function Contact() {
       };
 
       // 3. The Request to our brand new endpoint
-      const response = await axios.post("http://localhost:8000/api/contact", payload);
+      const response = await axios.post("https://embergym.onrender.com/api/contact", payload);
 
       if (response.status === 200 || response.status === 201) {
         setIsSubmitted(true);

@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Set global axios defaults for Sanctum
   axios.defaults.withCredentials = true;
   axios.defaults.withXSRFToken = true;
-  axios.defaults.baseURL = "http://localhost:8000";
+  axios.defaults.baseURL = "https://embergym.onrender.com";
 
   useEffect(() => {
     const verifySession = async () => {

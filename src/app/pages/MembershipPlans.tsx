@@ -121,7 +121,7 @@ export function MembershipPlans() {
     setCancelLoading(true);
     try {
       // 1. The Security Handshake
-      await axios.get("http://localhost:8000/sanctum/csrf-cookie");
+      await axios.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
       // 2. The secure request (using standard axios and the /api/ prefix)
       const response = await axios.post("/api/payments/cancel");

@@ -74,10 +74,10 @@ export function Login() {
         };
 
         // 1. The Handshake: Get the security token from Laravel
-        await axios.get("http://localhost:8000/sanctum/csrf-cookie");
+        await axios.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
         // 2. The Login: Now send the credentials (Axios will auto-attach the token)
-        const response = await axios.post("http://localhost:8000/api/login", payload, {
+        const response = await axios.post("https://embergym.onrender.com/api/login", payload, {
           headers: {
             "Accept": "application/json",
             "Content-Type": "application/json"
@@ -154,7 +154,7 @@ export function Login() {
     setIsSendingReset(true);
     try {
       await axios.post(
-        "http://localhost:8000/api/forgot-password", // Changed to localhost
+        "https://embergym.onrender.com/api/forgot-password", // Changed to localhost
         { email: forgotEmail.trim() },
         // ... rest of your config
         {

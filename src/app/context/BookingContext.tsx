@@ -48,35 +48,39 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
       setIsLoadingBookings(true); // <-- Start loading
       try {
-        const response = await api.get('/api/my-bookings');
+        // 1. FIXED URL: Removed the extra /api/ so it doesn't double up!
+        const response = await api.get('/my-bookings');
         
-        // Translate Laravel's database records into React's Booking interface
-        const dbBookings = response.data;
+        // 2. THE SAFETY SHIELD: Ensure we actually got an array back from Laravel
+        // If it's not an array (like an error object or empty string), force it to be an empty array []
+        const dbBookings = Array.isArray(response.data) ? response.data : [];
+
+        // Now .map() will NEVER crash!
         const formattedBookings: Booking[] = dbBookings.map((dbBooking: any) => {
-          // Cross-reference local data to fill in the blanks
           const classInfo = CLASSES.find(c => c.name === dbBooking.class_name);
           const scheduleInfo = SCHEDULE.find(s => s.id === dbBooking.schedule_id);
 
           return {
-            bookingId: dbBooking.id.toString(), // Use the real DB ID
+            bookingId: dbBooking.id?.toString() || Math.random().toString(), 
             scheduleId: dbBooking.schedule_id,
             classId: classInfo?.id || 0,
-            className: dbBooking.class_name,
-            type: dbBooking.class_type,
+            className: dbBooking.class_name || 'Unknown Class',
+            type: dbBooking.class_type || 'General',
             instructor: classInfo?.instructor || scheduleInfo?.instructor || 'TBA',
-            day: dbBooking.schedule_day,
-            time: dbBooking.schedule_time,
+            day: dbBooking.schedule_day || 'Any',
+            time: dbBooking.schedule_time || 'TBA',
             duration: classInfo?.duration || 60,
             room: dbBooking.room || 'Main Studio'
           };
         });
 
-        // Set the successfully mapped bookings into state!
         setBookings(formattedBookings);
       } catch (error) {
+        // If it still fails, it logs safely without exploding the screen
         console.error("Failed to fetch schedule from database:", error);
+        setBookings([]); // Fallback to empty array on error
       } finally {
-        setIsLoadingBookings(false); // <-- Stop loading whether it succeeds or fails
+        setIsLoadingBookings(false); 
       }
     };
 

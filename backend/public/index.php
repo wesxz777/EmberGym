@@ -31,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-// ... The rest of your normal index.php code continues down here ...
 
 define('LARAVEL_START', microtime(true));
 

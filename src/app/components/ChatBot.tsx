@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Bot } from "lucide-react";
-import axios from "axios";
 
 interface Message {
   role: "user" | "assistant";

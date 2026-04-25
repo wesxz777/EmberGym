@@ -8,7 +8,8 @@ import { PaymentSummary } from "../components/payment/PaymentSummary";
 import { TaxIDField } from "../components/payment/TaxIDField";
 import { CheckboxField } from "../components/payment/CheckboxField";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import api from "../../config/api";
+
 
 interface FormData {
   billing_name: string;
@@ -122,9 +123,9 @@ export function PaymentCheckout() {
     setIsLoading(true);
 
     try {
-      await axios.get("/sanctum/csrf-cookie");
+      await api.get("/sanctum/csrf-cookie");
 
-      const response = await axios.post("/api/payments/checkout", {
+      const response = await api.post("/api/payments/checkout", {
         plan,
         card_number: formData.card_number.replace(/\s/g, ""),
         card_expiry: formData.card_expiry,

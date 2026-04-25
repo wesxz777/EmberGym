@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Mail, Lock, Eye, EyeOff, LogIn} from "lucide-react";
 import { motion } from "motion/react";
-import axios from "axios";
 import { useAuth } from "../context/AuthContext";
+import api from "../../config/api";
 
-axios.defaults.withCredentials = true;
-axios.defaults.withXSRFToken = true;
-axios.defaults.baseURL = "http://localhost:5500";
+api.defaults.withCredentials = true;
+api.defaults.withXSRFToken = true;
+api.defaults.baseURL = "http://localhost:5500";
 
 export function Login() {
   
@@ -74,10 +74,10 @@ export function Login() {
         };
 
         // 1. The Handshake: Get the security token from Laravel
-        await axios.get("https://embergym.onrender.com/sanctum/csrf-cookie");
+        await api.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
         // 2. The Login: Now send the credentials (Axios will auto-attach the token)
-        const response = await axios.post("https://embergym.onrender.com/api/login", payload, {
+        const response = await api.post("https://embergym.onrender.com/api/login", payload, {
           headers: {
             "Accept": "application/json",
             "Content-Type": "application/json"
@@ -153,7 +153,7 @@ export function Login() {
 
     setIsSendingReset(true);
     try {
-      await axios.post(
+      await api.post(
         "https://embergym.onrender.com/api/forgot-password", // Changed to localhost
         { email: forgotEmail.trim() },
         // ... rest of your config

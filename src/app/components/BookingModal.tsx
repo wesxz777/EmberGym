@@ -27,7 +27,7 @@ import {
   canPlanAccessClass,
   ScheduleItem,
 } from "../data/gymData";
-import axios from "axios";
+import api from "../../config/api";
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
 export type BookingSource = { kind: "class"; classId: number };
@@ -126,7 +126,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
         message: "Booked via Ember Gym app"
       };
 
-      const response = await axios.post("/api/contact-bookings", payload);
+      const response = await api.post("/api/contact-bookings", payload);
 
       if (response.status === 200 || response.status === 201) {
         addBooking({
@@ -160,7 +160,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
     setIsSubmitting(true); 
 
     try {
-      await axios.delete(`/api/contact-bookings/${existingBooking.bookingId}`);
+      await api.delete(`/api/contact-bookings/${existingBooking.bookingId}`);
       removeBooking(existingBooking.bookingId);
 
       // --- FIXED: Use the new universal notification signal ---

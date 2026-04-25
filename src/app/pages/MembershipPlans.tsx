@@ -4,8 +4,7 @@ import { Check, X, Zap, Crown, Star, Clock } from "lucide-react";
 import { motion } from "motion/react";
 import * as Progress from "@radix-ui/react-progress";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
-
+import api from "../../config/api";
 
 interface Plan {
   id: number;
@@ -121,10 +120,10 @@ export function MembershipPlans() {
     setCancelLoading(true);
     try {
       // 1. The Security Handshake
-      await axios.get("https://embergym.onrender.com/sanctum/csrf-cookie");
+      await api.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
       // 2. The secure request (using standard axios and the /api/ prefix)
-      const response = await axios.post("/api/payments/cancel");
+      const response = await api.post("/api/payments/cancel");
 
       if (response.data.success) {
         // Update user context to remove membership

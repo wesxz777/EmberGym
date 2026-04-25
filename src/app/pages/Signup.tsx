@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { Mail, Lock, Eye, EyeOff, User, Phone, CheckCircle, AlertCircle, Check } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import axios from "axios";
+import api from "../../config/api";
 
 // 🔥 HELPER: Auto-Capitalization
 const toTitleCase = (str: string) => {
@@ -44,7 +44,7 @@ export function Signup() {
     }));
 
     try {
-      const response = await axios.get("https://embergym.onrender.com/api/check-email", {
+      const response = await api.get("https://embergym.onrender.com/api/check-email", {
         params: { email },
       });
       setAvailability((prev) => ({
@@ -68,7 +68,7 @@ export function Signup() {
     }));
 
     try {
-      const response = await axios.get("https://embergym.onrender.com/api/check-phone", {
+      const response = await api.get("https://embergym.onrender.com/api/check-phone", {
         params: { phone },
       });
       setAvailability((prev) => ({
@@ -156,7 +156,7 @@ export function Signup() {
           password_confirmation: formData.confirmPassword,
         };
 
-        const response = await axios.post("https://embergym.onrender.com/api/register", payload, {
+        const response = await api.post("https://embergym.onrender.com/api/register", payload, {
          headers: {
            "Accept": "application/json",
            "Content-Type": "application/json"

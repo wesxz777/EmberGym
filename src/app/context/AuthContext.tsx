@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import axios from "axios";
+import api from "../../config/api";
 
 export type UserRole = "member" | "admin" | "manager" | "receptionist" | "trainer" | "super_admin";
 
@@ -32,9 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Set global axios defaults for Sanctum
-  axios.defaults.withCredentials = true;
-  axios.defaults.withXSRFToken = true;
-  axios.defaults.baseURL = "https://embergym.onrender.com";
+  api.defaults.withCredentials = true;
+  api.defaults.withXSRFToken = true;
+  api.defaults.baseURL = "https://embergym.onrender.com";
 
   useEffect(() => {
     const verifySession = async () => {
@@ -46,10 +46,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       try {
-        const response = await axios.get("/api/user");
+        const response = await api.get("/api/user");
         
         if (response.data) {
           if (storedUser) {
@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error("Session expired or invalid", error);
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        delete axios.defaults.headers.common["Authorization"];
+        delete api.defaults.headers.common["Authorization"];
         setUser(null);
       } finally {
         setIsAuthLoading(false);
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (token) {
       localStorage.setItem("token", token);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
   };
 
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // 1. Tell Laravel to destroy the session cookie and revoke tokens
       // (Adjust to "/logout" if your Laravel setup uses the default web route instead of API)
-      await axios.post("/api/logout").catch(() => axios.post("/logout")); 
+      await api.post("/api/logout").catch(() => api.post("/logout")); 
     } catch (error) {
       console.error("Error during server logout", error);
     } finally {
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      delete axios.defaults.headers.common["Authorization"];
+      delete api.defaults.headers.common["Authorization"];
       setIsLoggingOut(false);
     }
   };

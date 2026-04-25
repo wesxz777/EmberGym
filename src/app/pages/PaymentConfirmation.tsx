@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams } from "react-router";
 import { CheckCircle, Download, Home, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import api from "../../config/api";
+
 
 interface PaymentData {
   id: number;
@@ -71,7 +72,7 @@ export function PaymentConfirmation() {
       // --------------------------------
 
       try {
-        const response = await axios.get(`/api/payments/status/${paymentId}`);
+        const response = await api.get(`/api/payments/status/${paymentId}`);
         
         if (response.data.success) {
           setPayment(response.data.payment);
@@ -104,7 +105,7 @@ export function PaymentConfirmation() {
     
     try {
       // Request the PDF blob from Laravel
-      const response = await axios.get(`/api/payments/${payment.id}/receipt`, {
+      const response = await api.get(`/api/payments/${payment.id}/receipt`, {
         responseType: 'blob', // This is crucial for handling files!
         headers: {
           'Accept': 'application/pdf'

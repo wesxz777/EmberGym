@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import axios from "axios";
 import { useAuth } from "./AuthContext";
 import { SCHEDULE, CLASSES } from "../data/gymData";
+import api from "../../config/api";
 
 export interface Booking {
   bookingId: string;      // unique
@@ -48,7 +48,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
       setIsLoadingBookings(true); // <-- Start loading
       try {
-        const response = await axios.get('/api/my-bookings');
+        const response = await api.get('/api/my-bookings');
         
         // Translate Laravel's database records into React's Booking interface
         const dbBookings = response.data;

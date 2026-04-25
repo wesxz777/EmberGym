@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import api from "../../config/api";
 
 export type ProfileTab = "profile" | "password" | "membership";
 
@@ -193,7 +193,7 @@ function EditProfileTab({
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await axios.put('/api/user/update', form, {
+      const response = await api.put('/api/user/update', form, {
         withCredentials: true
       });
 
@@ -344,7 +344,7 @@ function ChangePasswordTab({ onClose, logout }: { onClose: () => void, logout: (
     setIsSaving(true);
 
     try {
-     await axios.put('/api/user/password', { // 🔥 NEW, PROTECTED endpoint in UserController
+     await api.put('/api/user/password', { // 🔥 NEW, PROTECTED endpoint in UserController
       current: form.current,
       newPw: form.newPw
       }, { withCredentials: true });
@@ -516,7 +516,7 @@ function MembershipTab({
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await axios.get('/api/payments/history');
+        const response = await api.get('/api/payments/history');
         if (response.data.success) {
           setPayments(response.data.payments);
         }
@@ -532,7 +532,7 @@ function MembershipTab({
   const handleDownloadReceipt = async (paymentId: number, transactionId: string) => {
     setDownloadingId(paymentId);
     try {
-      const response = await axios.get(`/api/payments/${paymentId}/receipt`, {
+      const response = await api.get(`/api/payments/${paymentId}/receipt`, {
         responseType: 'blob',
         headers: { 'Accept': 'application/pdf' }
       });

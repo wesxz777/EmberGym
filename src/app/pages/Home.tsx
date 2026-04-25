@@ -18,7 +18,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
-import axios from "axios";
+import api from "../../config/api";
 
 export function Home() {
   const { isLoggedIn, user } = useAuth();
@@ -80,7 +80,7 @@ export function Home() {
     setIsCancelling(true);
 
     try {
-      await axios.delete(`/api/contact-bookings/${bookingToCancel.bookingId}`);
+      await api.delete(`/api/contact-bookings/${bookingToCancel.bookingId}`);
       removeBooking(bookingToCancel.bookingId);
       window.dispatchEvent(new Event("refresh-notifications"));
       setBookingToCancel(null);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Calendar as CalendarIcon, Users, Clock, Activity, Flame, TrendingUp, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import api from "<div styleName={} />../config/api";
+import api from "../../../config/api";
 
 
 interface ClassTemplate {

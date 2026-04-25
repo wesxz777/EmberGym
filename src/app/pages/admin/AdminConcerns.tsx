@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Mail, CheckCircle, Clock, Phone, Search, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import api from "../../utils/api";
+import api from "../../../config/api";
 
 interface Concern {
   id: number;

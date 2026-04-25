@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, Trash2, ChevronLeft, ChevronRight, UserPlus, Shield, Check, X, AlertTriangle, Briefcase, Edit, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import api from "../../utils/api";
+import api from "../../../config/api";
 import { useAuth } from "../../context/AuthContext";
 
 interface StaffMember {

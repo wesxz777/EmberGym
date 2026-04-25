@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Search, Trash2, ChevronLeft, ChevronRight, Users, TrendingUp, AlertTriangle, Check, X } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion, AnimatePresence } from "motion/react";
-import api from "../../utils/api";
+import api from "../../../config/api";
 
 interface Member {
   id: number;

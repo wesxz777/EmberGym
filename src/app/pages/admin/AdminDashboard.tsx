@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Users, CalendarDays, TrendingUp, Clock, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { motion, AnimatePresence } from "motion/react";
-import api from "../../utils/api";
+import api from "../../../config/api";
 import { AdminLoader } from "../../components/admin/AdminLoader";
 
 // Update the interface to expect the new chart_data from Laravel

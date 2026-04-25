@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->unique(); 
             
-            // 🔥 THE FIX: Added the missing membership columns! 🔥
-            $table->string('role')->default('staff'); 
+            // 🔥 User Roles & Memberships
+            $table->string('role')->default('member'); // Default to member for security!
             $table->string('membership_plan')->default('none');
             $table->string('membership_status')->default('inactive');
             $table->timestamp('membership_expires_at')->nullable(); 

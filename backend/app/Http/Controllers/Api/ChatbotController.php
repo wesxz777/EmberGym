@@ -71,12 +71,12 @@ public function chat(Request $request)
             }
 
             $payload = [
-                'model' => 'llama3-8b-8192',
-                'messages' => $formattedMessages,
-                'stream' => true,
-                'temperature' => 0.1,
-                'max_tokens' => 1024,
-            ];
+            'model' => 'llama-3.1-8b-instant', // 🔥 THE FIX: Point to the newest active model!
+            'messages' => $formattedMessages,
+            'stream' => true,
+            'temperature' => 0.1,
+            'max_tokens' => 1024,
+        ];
 
             $response = new StreamedResponse(function () use ($payload) {
                 $ch = curl_init('https://api.groq.com/openai/v1/chat/completions');

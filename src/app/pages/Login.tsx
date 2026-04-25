@@ -67,43 +67,45 @@ export function Login() {
           remember_me: formData.rememberMe, 
         };
 
-        // 1. The Handshake: Get the security cookie
+        // 1. The Handshake
         await api.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
-        // 2. The Login: Send credentials (Laravel responds with empty 204 success)
+        // 2. The Login 
         const response = await api.post("/login", payload);
 
         if (response.status === 200 || response.status === 204) {
           
-          // 3. THE FIX: Now that we have the cookie, ask Laravel for our user data!
+          // 3. Fetch the user profile
           const userResponse = await api.get("/user"); 
-          const user = userResponse.data; // THIS is where the user data actually lives!
+          
+          // 4. Safely extract the user (sometimes Laravel wraps it in .user, sometimes it doesn't)
+          const user = userResponse.data?.user || userResponse.data;
 
-          // Convert membership_plan from lowercase to capitalized
+          // 5. THE AI's FIX: Use Optional Chaining (?.) to prevent crashes!
           let membership = null;
-          if (user.membership_plan && user.membership_plan !== 'none') {
+          if (user?.membership_plan && user?.membership_plan !== 'none') {
             membership = user.membership_plan.charAt(0).toUpperCase() + user.membership_plan.slice(1);
           }
 
-          // Pass the user data to AuthContext
+          // Pass the user data to AuthContext safely with fallbacks
           login({
-            id: user.id, 
-            firstName: user.first_name,
-            lastName: user.last_name,
-            email: user.email,
-            phone: user.phone,
+            id: user?.id, 
+            firstName: user?.first_name || "Member",
+            lastName: user?.last_name || "",
+            email: user?.email || formData.email,
+            phone: user?.phone || "",
             membership: membership as "Basic" | "Pro" | "Elite" | null,
-            role: user.role,
+            role: user?.role || "user",
           }, "sanctum-cookie-active"); 
 
-          // Redirect based on role
+          // Redirect based on role safely
           const adminRoles = ["admin", "manager", "super_admin"];
-          if (adminRoles.includes(user.role)) {
+          if (adminRoles.includes(user?.role)) {
             navigate("/admin");
           } else {
             navigate("/");
           }
-        }
+        } 
       } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 422) {
           setFormErrors({

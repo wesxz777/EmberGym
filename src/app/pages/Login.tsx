@@ -67,16 +67,17 @@ export function Login() {
           remember_me: formData.rememberMe, 
         };
 
-        // 1. The Handshake: Get the security cookie from Laravel
-        // We override the base URL just for this one call because it lives outside the /api folder
+        // 1. The Handshake: Get the security cookie
         await api.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
-        // 2. The Login: Now send the credentials (Axios auto-attaches the cookie)
+        // 2. The Login: Send credentials (Laravel responds with empty 204 success)
         const response = await api.post("/login", payload);
 
         if (response.status === 200 || response.status === 204) {
-          // DO NOT look for response.data.token anymore!
-          const user = response.data.user;
+          
+          // 3. THE FIX: Now that we have the cookie, ask Laravel for our user data!
+          const userResponse = await api.get("/user"); 
+          const user = userResponse.data; // THIS is where the user data actually lives!
 
           // Convert membership_plan from lowercase to capitalized
           let membership = null;
@@ -84,7 +85,7 @@ export function Login() {
             membership = user.membership_plan.charAt(0).toUpperCase() + user.membership_plan.slice(1);
           }
 
-          // Pass the user data to AuthContext (using a placeholder token so TS doesn't yell)
+          // Pass the user data to AuthContext
           login({
             id: user.id, 
             firstName: user.first_name,

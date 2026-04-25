@@ -111,3 +111,8 @@ Route::get('/force-migrate', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+
+Route::get('/magic-clear', function () {
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    return response()->json(['message' => 'Render cache completely destroyed!']);
+});

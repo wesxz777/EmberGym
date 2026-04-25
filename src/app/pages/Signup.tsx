@@ -44,7 +44,8 @@ export function Signup() {
     }));
 
     try {
-      const response = await api.get("https://embergym.onrender.com/api/check-email", {
+      // 🔥 FIX: Use relative API path to use our secure configuration
+      const response = await api.get("/api/check-email", {
         params: { email },
       });
       setAvailability((prev) => ({
@@ -68,7 +69,8 @@ export function Signup() {
     }));
 
     try {
-      const response = await api.get("https://embergym.onrender.com/api/check-phone", {
+      // 🔥 FIX: Use relative API path
+      const response = await api.get("/api/check-phone", {
         params: { phone },
       });
       setAvailability((prev) => ({
@@ -156,19 +158,15 @@ export function Signup() {
           password_confirmation: formData.confirmPassword,
         };
 
-        const response = await api.post("https://embergym.onrender.com/api/register", payload, {
-         headers: {
-           "Accept": "application/json",
-           "Content-Type": "application/json"
-         }
-       });
-       
+        // 🔥 FIX: Use relative API path and let api.ts handle headers/CORS
+        const response = await api.post("/api/register", payload);
+        
         if (response.status === 201 || response.status === 200) {
           setIsSuccess(true);
         }
         
       } catch (error: any) {
-        setFormErrors({ submit: "Registration failed. Please try again." });
+        setFormErrors({ submit: "Registration failed. Please try again or use a different email." });
       } finally {
         setIsLoading(false);
       }
@@ -302,7 +300,6 @@ export function Signup() {
                           name="firstName"
                           value={formData.firstName}
                           onChange={(e) => {
-                            // 🔥 FIX: Clean and Auto-Capitalize First Name
                             const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
                             e.target.value = toTitleCase(cleanValue);
                             handleChange(e);
@@ -323,7 +320,6 @@ export function Signup() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={(e) => {
-                          // 🔥 FIX: Clean and Auto-Capitalize Last Name
                           const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
                           e.target.value = toTitleCase(cleanValue);
                           handleChange(e);
@@ -373,11 +369,10 @@ export function Signup() {
                         name="phone"
                         value={formData.phone}
                         onChange={(e) => {
-                          // 🔥 FIX: Lock +63 and restrict to numbers only, max 10 digits
                           let val = e.target.value;
                           if (!val.startsWith("+63")) val = "+63"; 
-                          const digits = val.slice(3).replace(/\D/g, ""); // Extract everything after +63 and remove non-numbers
-                          const limitedDigits = digits.slice(0, 10); // Limit to 10 digits max
+                          const digits = val.slice(3).replace(/\D/g, ""); 
+                          const limitedDigits = digits.slice(0, 10); 
                           e.target.value = "+63" + limitedDigits;
                           handleChange(e);
                         }}

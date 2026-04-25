@@ -2,6 +2,7 @@
 use App\Http\Controllers\Api\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
 // Auth & public
 use App\Http\Controllers\Api\AuthController;

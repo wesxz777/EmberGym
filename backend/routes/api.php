@@ -26,7 +26,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login',    [AuthController::class, 'login']);
 Route::get('/check-email', [AuthController::class, 'checkEmail']);
 Route::get('/check-phone', [AuthController::class, 'checkPhone']);
-Route::post('/chatbot', [ChatbotController::class, 'handleMessage']);
+Route::post('/chatbot', [ChatbotController::class, 'chat']);
 // --- PUBLIC ROUTES ---
 Route::post('/contact', [\App\Http\Controllers\Api\ContactMessageController::class, 'store']);
 

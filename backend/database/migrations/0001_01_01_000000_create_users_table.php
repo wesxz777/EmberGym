@@ -11,25 +11,29 @@ return new class extends Migration
      */
     public function up(): void
     {
+       
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('first_name'); 
-            $table->string('last_name');  
+            $table->string('first_name');
+            $table->string('last_name');
             $table->string('email')->unique();
-            $table->string('phone')->unique(); 
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('password');
             
-            // 🔥 User Roles & Memberships
-            $table->string('role')->default('member'); // Default to member for security!
+            // 🔥 ALL CUSTOM COLUMNS CONSOLIDATED HERE:
+            $table->enum('role', ['member', 'admin', 'manager', 'receptionist', 'trainer', 'super_admin'])->default('member');
             $table->string('membership_plan')->default('none');
             $table->string('membership_status')->default('inactive');
-            $table->timestamp('membership_expires_at')->nullable(); 
+            $table->timestamp('membership_expires_at')->nullable();
 
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
             $table->rememberToken();
             $table->timestamps();
         });
-        
+
+        // Keep the password_reset_tokens and sessions tables down here!
+        // ...
+    
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');

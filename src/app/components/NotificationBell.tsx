@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Bell, CheckCircle, CreditCard, Calendar } from 'lucide-react';
-import axios from 'axios';
+import api from '../../config/api';
 import { useAuth } from '../context/AuthContext';
 
 // Interfaces mapping to Laravel's default notification structure
@@ -55,7 +55,7 @@ export function NotificationBell() {
   const fetchNotifications = async () => {
     try {
       // Configure axios to use your Sanctum configuration
-      const response = await axios.get('/api/notifications', {
+      const response = await api.get('/api/notifications', {
         withCredentials: true, // Crucial for Sanctum auth
       });
       setNotifications(response.data);
@@ -66,7 +66,7 @@ export function NotificationBell() {
 
   const markAllAsRead = async () => {
     try {
-      await axios.post('/api/notifications/mark-read', {}, {
+      await api.post('/api/notifications/mark-read', {}, {
         withCredentials: true,
       });
       // Update UI state locally instead of fetching again to save a request

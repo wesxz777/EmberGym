@@ -18,13 +18,14 @@ import { AdminMembers } from "./pages/admin/AdminMembers";
 import { AdminStaff } from "./pages/admin/AdminStaff";
 import { AdminBookings } from "./pages/admin/AdminBookings";
 import { AdminConcerns } from './pages/admin/AdminConcerns';
-
+import { GlobalError } from "./components/GlobalError";
 
 export const router = createHashRouter([
   // ── Public site ──────────────────────────────────────────────
   {
     path: "/",
     Component: Layout,
+    ErrorBoundary: GlobalError,
     children: [
       { index: true, Component: Home },
       { path: "classes",    Component: Classes },
@@ -45,6 +46,7 @@ export const router = createHashRouter([
   {
     path: "/admin",
     Component: AdminGuard,
+    ErrorBoundary: GlobalError,
     children: [
       {
         Component: AdminLayout,

@@ -5,10 +5,6 @@ import { motion } from "motion/react";
 import { useAuth } from "../context/AuthContext";
 import api from "../../config/api";
 
-api.defaults.withCredentials = true;
-api.defaults.withXSRFToken = true;
-api.defaults.baseURL = "http://localhost:5500";
-
 export function Login() {
   
   const { login } = useAuth();
@@ -58,8 +54,6 @@ export function Login() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-
-    
     e.preventDefault();
     
     if (validateForm()) {
@@ -73,20 +67,15 @@ export function Login() {
           remember_me: formData.rememberMe, 
         };
 
-        // 1. The Handshake: Get the security token from Laravel
+        // 1. The Handshake: Get the security cookie from Laravel
+        // We override the base URL just for this one call because it lives outside the /api folder
         await api.get("https://embergym.onrender.com/sanctum/csrf-cookie");
 
-        // 2. The Login: Now send the credentials (Axios will auto-attach the token)
-        const response = await api.post("https://embergym.onrender.com/api/login", payload, {
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          }
-        });
+        // 2. The Login: Now send the credentials (Axios auto-attaches the cookie)
+        const response = await api.post("/login", payload);
 
-        if (response.status === 200) {
-          // Grab the VIP Badge (Token) from Laravel
-          const token = response.data.token;
+        if (response.status === 200 || response.status === 204) {
+          // DO NOT look for response.data.token anymore!
           const user = response.data.user;
 
           // Convert membership_plan from lowercase to capitalized
@@ -95,7 +84,7 @@ export function Login() {
             membership = user.membership_plan.charAt(0).toUpperCase() + user.membership_plan.slice(1);
           }
 
-          // Pass the user data AND the token to your updated AuthContext
+          // Pass the user data to AuthContext (using a placeholder token so TS doesn't yell)
           login({
             id: user.id, 
             firstName: user.first_name,
@@ -104,7 +93,7 @@ export function Login() {
             phone: user.phone,
             membership: membership as "Basic" | "Pro" | "Elite" | null,
             role: user.role,
-          }, token); 
+          }, "sanctum-cookie-active"); 
 
           // Redirect based on role
           const adminRoles = ["admin", "manager", "super_admin"];
@@ -116,16 +105,15 @@ export function Login() {
         }
       } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 422) {
-        setFormErrors({
-          email: "Invalid email or password. Please try again.",
-        });
-      } else if (error.response?.status === 419) {
-        // Specifically handle the CSRF/Session timeout error
-        alert("Session expired. Please refresh the page and try again.");
-      } else {
-        console.error("Login failed:", error);
-        alert("Database connection failed. Is your Laravel server running?");
-      }
+          setFormErrors({
+            email: "Invalid email or password. Please try again.",
+          });
+        } else if (error.response?.status === 419) {
+          alert("Session expired. Please refresh the page and try again.");
+        } else {
+          console.error("Login failed:", error);
+          alert("Database connection failed. Is your Laravel server running?");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -153,18 +141,8 @@ export function Login() {
 
     setIsSendingReset(true);
     try {
-      await api.post(
-        "https://embergym.onrender.com/api/forgot-password", // Changed to localhost
-        { email: forgotEmail.trim() },
-        // ... rest of your config
-        {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
+      // Cleaned up the URL to just point to the relative route
+      await api.post("/forgot-password", { email: forgotEmail.trim() });
       setForgotSuccess("If that email exists, a password reset link has been sent.");
     } catch (error: any) {
       const message =

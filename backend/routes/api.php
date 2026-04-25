@@ -103,3 +103,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/public/gym-info', [PublicController::class, 'getGymData']);
 
     
+Route::get('/force-migrate', function () {
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        return response()->json(['message' => 'Database updated successfully!']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});

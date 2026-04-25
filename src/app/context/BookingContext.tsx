@@ -49,8 +49,8 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       setIsLoadingBookings(true); // <-- Start loading
       try {
         // 1. FIXED URL: Removed the extra /api/ so it doesn't double up!
-        const response = await api.get('/my-bookings');
-        
+        const response = await api.get('/api/my-bookings');   
+             
         // 2. THE SAFETY SHIELD: Ensure we actually got an array back from Laravel
         // If it's not an array (like an error object or empty string), force it to be an empty array []
         const dbBookings = Array.isArray(response.data) ? response.data : [];

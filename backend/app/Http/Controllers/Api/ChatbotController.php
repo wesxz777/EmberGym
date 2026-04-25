@@ -42,7 +42,7 @@ MEMBERSHIPS: Basic ₱999 (2 classes/week), Pro ₱1,499 (unlimited), Elite ₱1
 CLASSES: Power Yoga, HIIT Blast, Strength Builder, Cardio Cycling, Core Pilates, Boxing, CrossFit, Zumba
 PROMPT;
 
-    public function chat(Request $request)
+public function handleMessage(Request $request)
     {
         try {
             if (session_status() === PHP_SESSION_ACTIVE) {

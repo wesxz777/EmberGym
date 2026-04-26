@@ -34,7 +34,8 @@ export function AdminDashboard() {
   const [timeRange, setTimeRange] = useState<TimeRange>("week");
 
   useEffect(() => {
-    api.get("/admin/dashboard")
+// 🔥 THE FIX: Add /api to the route
+      api.get("/api/admin/dashboard")
       .then((res) => setData(res.data))
       .catch(() => setError("Failed to load dashboard data."))
       .finally(() => setLoading(false));

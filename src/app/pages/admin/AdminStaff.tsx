@@ -58,8 +58,8 @@ export function AdminStaff() {
   const fetchStaff = async (page: number, search: string, role: string) => {
     setLoading(true);
     try {
-      const res = await api.get(`/api/admin/staff?page=${page}&search=${search}&role=${role}`);
-      setStaffList(res.data.staff?.data || []);
+    const res = await api.post('https://embergym.onrender.com/api/admin/staff', addForm);      
+    setStaffList(res.data.staff?.data || []);
       setPagination({
         current_page: res.data.staff?.current_page || 1,
         last_page: res.data.staff?.last_page || 1,

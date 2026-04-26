@@ -83,7 +83,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     
     //admin dashboard
     Route::get('dashboard', [AdminDashboardController::class, 'index']);
-
+    
     Route::apiResource('members',  AdminMemberController::class)->except(['store']);
     
     Route::get('staff', [AdminStaffController::class, 'index']);

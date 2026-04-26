@@ -21,7 +21,7 @@ export function AdminConcerns() {
 
   const fetchConcerns = async () => {
     try {
-      const res = await api.get('/admin/concerns');
+    const res = await api.get('https://embergym.onrender.com/api/admin/concerns');
       setConcerns(res.data);
     } catch (error) {
       console.error("Failed to fetch concerns", error);
@@ -40,7 +40,7 @@ export function AdminConcerns() {
 
   const handleResolve = async (id: number) => {
     try {
-      await api.patch(`/admin/concerns/${id}/resolve`);
+      await api.patch(`/api/admin/concerns/${id}/resolve`);
       // Update UI optimistically
       setConcerns(concerns.map(c => c.id === id ? { ...c, status: "resolved" } : c));
     } catch (error) {

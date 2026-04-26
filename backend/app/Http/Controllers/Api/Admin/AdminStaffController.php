@@ -54,7 +54,7 @@ class AdminStaffController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',
             'last_name'  => 'required|string|max:100',
-            'role'       => 'required|in:admin,trainer,staff,receptionist',
+            'role' => 'required|in:super_admin,admin,trainer,staff,receptionist',
             'phone' => ['required', 'string', 'regex:/^\+63\d{10}$/'],
             'password'   => 'required|string|min:8|confirmed',
             'email'      => [
@@ -132,7 +132,7 @@ class AdminStaffController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',
             'last_name'  => 'required|string|max:100',
-            'role'       => 'required|in:admin,trainer,staff,receptionist',
+            'role' => 'required|in:super_admin,admin,trainer,staff,receptionist',
             // Ignore the current user's ID for uniqueness checks so they can keep their own email/phone!
             'phone' => ['required', 'string', 'regex:/^\+63\d{10}$/', 'unique:users' . ($id ? ",phone,$id" : '')],
             'email'      => [

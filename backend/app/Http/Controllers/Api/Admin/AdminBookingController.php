@@ -67,9 +67,11 @@ class AdminBookingController extends Controller
             ->get();
 
         // --- THE MATH: Calculate Attendance Trends ---
-        $sevenDaysAgo = now()->subDays(7);
-        $thirtyDaysAgo = now()->subDays(30);
-        $oneYearAgo = now()->subYear();
+       // --- THE MATH: Calculate Attendance Trends ---
+        // 🔥 Added ->toDateString() so Laravel can easily compare the dates!
+        $sevenDaysAgo = now()->subDays(7)->toDateString();
+        $thirtyDaysAgo = now()->subDays(30)->toDateString();
+        $oneYearAgo = now()->subYear()->toDateString();
 
         $stats = [
             'last_7_days' => $schedules->where('class_date', '>=', $sevenDaysAgo)->sum('bookings_count'),

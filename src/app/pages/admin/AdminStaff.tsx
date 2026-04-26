@@ -58,7 +58,7 @@ export function AdminStaff() {
   const fetchStaff = async (page: number, search: string, role: string) => {
     setLoading(true);
     try {
-      const res = await api.get(`/admin/staff?page=${page}&search=${search}&role=${role}`);
+      const res = await api.get(`/api/admin/staff?page=${page}&search=${search}&role=${role}`);
       setStaffList(res.data.staff?.data || []);
       setPagination({
         current_page: res.data.staff?.current_page || 1,
@@ -148,7 +148,7 @@ export function AdminStaff() {
     }
 
     try {
-      await api.put(`/admin/staff/${staffToEdit.id}`, editForm);
+      await api.put(`/api/admin/staff/${staffToEdit.id}`, editForm);
       setShowEditModal(false);
       fetchStaff(currentPage, searchTerm, roleFilter);
       showToast(`${editForm.first_name}'s profile was updated.`);
@@ -164,7 +164,7 @@ export function AdminStaff() {
     if (!staffToDelete) return;
     setIsDeleting(true);
     try {
-      await api.delete(`/admin/staff/${staffToDelete.id}`);
+      await api.delete(`/api/admin/staff/${staffToDelete.id}`);
       const deletedName = `${staffToDelete.first_name} ${staffToDelete.last_name}`;
       fetchStaff(currentPage, searchTerm, roleFilter);
       setStaffToDelete(null); 

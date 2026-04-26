@@ -95,18 +95,17 @@ class AdminStaffController extends Controller
 
         // Security Check 2: The Boss Rule (Admins cannot delete Super Admins)
         if ($targetUser->role === 'super_admin' && auth()->user()->role !== 'super_admin') {
-        return response()->json([
-            'message' => 'Unauthorized. You do not have permission to delete a Super Admin.'
-        ], 403);
-    }
+            return response()->json([
+                'message' => 'Unauthorized. You do not have permission to delete a Super Admin.'
+            ], 403);
+        }
 
         // Security Check 3: Prevent deleting yourself
         if ($currentUser->id === $targetUser->id) {
             return response()->json(['message' => 'You cannot remove your own account while logged in.'], 400);
         }
 
-        // Optional: If Trainers have bookings, delete them first to prevent DB errors
-        \App\Models\ContactBooking::where('user_id', $id)->delete(); 
+        // 🔥 The clean, relationship-only deletion
         $targetUser->contactBookings()->delete();
         $targetUser->delete();
 

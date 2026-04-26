@@ -66,7 +66,6 @@ class AdminBookingController extends Controller
             ->orderBy('class_date', 'desc') // Show most recent first
             ->get();
 
-        // --- THE MATH: Calculate Attendance Trends ---
        // --- THE MATH: Calculate Attendance Trends ---
         // 🔥 Added ->toDateString() so Laravel can easily compare the dates!
         $sevenDaysAgo = now()->subDays(7)->toDateString();

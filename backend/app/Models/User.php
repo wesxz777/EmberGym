@@ -37,7 +37,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-   public function contactBookings() {
-    return $this->hasMany(\App\Models\ContactBooking::class, 'admin_user_id'); 
-}
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

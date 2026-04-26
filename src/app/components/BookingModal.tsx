@@ -21,12 +21,11 @@ import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
 import {
-  SCHEDULE,
   CLASSES,
   PLAN_WEEKLY_LIMITS,
   canPlanAccessClass,
   ScheduleItem,
-} from "../data/gymData";
+} from "../data/gymData"; // 🔥 REMOVED 'SCHEDULE' FROM HERE!
 import api from "../../config/api";
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
@@ -67,6 +66,9 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const [selectedSlot, setSelectedSlot] = useState<ScheduleItem | null>(null);
   const [step, setStep] = useState<"pick" | "confirm" | "success" | "cancel">("pick");
 
+  // 🔥 NEW: Store live slots from the database
+  const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
+
   /* Reset on open */
   useEffect(() => {
     if (isOpen) {
@@ -82,20 +84,43 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
     return () => document.removeEventListener("keydown", h);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !source) return null;
-
   /* ─── Derive data ─────────────────────────────────────────────────────── */
-
-  // Class data
-  const classId = source.classId;
+  const classId = source?.classId;
   const classData = CLASSES.find((c) => c.id === classId);
 
-  // Available slots for this class
-  const availableSlots = classData
-    ? SCHEDULE.filter((s) => s.className === classData.name)
-    : [];
+  // 🔥 NEW: Fetch the real schedule for this specific class when the modal opens
+  useEffect(() => {
+    if (isOpen && classData) {
+      api.get('/api/public/schedule')
+        .then(res => {
+          const slotsForThisClass = res.data.filter((c: any) => 
+            c.template?.name === classData.name || c.name === classData.name
+          );
+          
+          const formattedSlots = slotsForThisClass.map((c: any) => {
+            const dateObj = new Date(c.class_date);
+            return {
+              id: c.id, // 🔥 This is the REAL live database ID!
+              className: classData.name,
+              type: classData.type,
+              instructor: c.trainer ? `${c.trainer.first_name} ${c.trainer.last_name}` : "TBA",
+              time: c.start_time.substring(0, 5),
+              day: dateObj.toLocaleDateString("en-US", { weekday: "long" }),
+              duration: classData.duration,
+              room: c.room,
+              spotsLeft: c.max_capacity - (c.bookings_count || 0)
+            };
+          });
+          setLiveSlots(formattedSlots);
+        })
+        .catch(err => console.error("Failed to fetch slots", err));
+    }
+  }, [isOpen, classData]);
 
-  // Active slot = what the user has selected
+  if (!isOpen || !source) return null;
+
+  // 🔥 UPDATED: Use liveSlots instead of the hardcoded SCHEDULE array
+  const availableSlots = liveSlots;
   const activeSlot = selectedSlot;
 
   /* ─── Membership gate checks ──────────────────────────────────────────── */
@@ -118,7 +143,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
         email: user.email,
         phone: user.phone || "N/A",
         class_type: activeSlot.type,
-        gym_class_id: activeSlot.id, // 🔥 CHANGED: This connects it to the Admin Panel!
+        gym_class_id: activeSlot.id, // Connections to Admin Panel
         schedule_day: activeSlot.day,
         schedule_time: activeSlot.time,
         class_name: activeSlot.className,
@@ -141,9 +166,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
           room: activeSlot.room,
         });
 
-        // --- FIXED: Use the new universal notification signal ---
         window.dispatchEvent(new Event("refresh-notifications"));
-
         setStep("success");
       }
     } catch (error) {
@@ -163,9 +186,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
       await api.delete(`/api/contact-bookings/${existingBooking.bookingId}`);
       removeBooking(existingBooking.bookingId);
 
-      // --- FIXED: Use the new universal notification signal ---
       window.dispatchEvent(new Event("refresh-notifications"));
-
       setStep("cancel");
     } catch (error) {
       console.error("Failed to cancel booking in database:", error);
@@ -360,7 +381,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                             : "Your booking has been cancelled. The spot is now available."}
                         </p>
                         
-                        {/* 🔥 FIXED ROUTING HERE 🔥 */}
                         {step === "success" ? (
                            <Link
                              to="/schedule"
@@ -402,48 +422,52 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       <div className="mb-4">
                         <p className="text-xs font-medium text-gray-400 mb-2">Select a time slot</p>
                         <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                          {availableSlots.map((slot) => {
-                            const booked = isBooked(slot.id);
-                            const isSelected = selectedSlot?.id === slot.id;
-                            return (
-                              <button
-                                key={slot.id}
-                                onClick={() => !booked && setSelectedSlot(slot)}
-                                disabled={booked}
-                                className={`w-full text-left rounded-xl border p-3 transition-all ${
-                                  booked
-                                    ? "border-green-500/20 bg-green-500/5 opacity-70 cursor-default"
-                                    : isSelected
-                                      ? "border-orange-500 bg-orange-500/10"
-                                      : "border-gray-700 bg-gray-900/50 hover:border-orange-500/50"
-                                }`}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? "bg-orange-500" : booked ? "bg-green-500/20" : "bg-gray-800"}`}>
-                                      {booked
-                                        ? <Check className="w-4 h-4 text-green-400" />
-                                        : <Calendar className={`w-4 h-4 ${isSelected ? "text-white" : "text-gray-500"}`} />
-                                      }
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-medium text-white">{slot.day}</p>
-                                      <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
-                                        <Clock className="w-3 h-3" />{slot.time}
-                                        <MapPin className="w-3 h-3 ml-1" />{slot.room}
+                          {availableSlots.length === 0 ? (
+                            <p className="text-sm text-gray-500 text-center py-4">Loading slots...</p>
+                          ) : (
+                            availableSlots.map((slot) => {
+                              const booked = isBooked(slot.id);
+                              const isSelected = selectedSlot?.id === slot.id;
+                              return (
+                                <button
+                                  key={slot.id}
+                                  onClick={() => !booked && setSelectedSlot(slot)}
+                                  disabled={booked}
+                                  className={`w-full text-left rounded-xl border p-3 transition-all ${
+                                    booked
+                                      ? "border-green-500/20 bg-green-500/5 opacity-70 cursor-default"
+                                      : isSelected
+                                        ? "border-orange-500 bg-orange-500/10"
+                                        : "border-gray-700 bg-gray-900/50 hover:border-orange-500/50"
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? "bg-orange-500" : booked ? "bg-green-500/20" : "bg-gray-800"}`}>
+                                        {booked
+                                          ? <Check className="w-4 h-4 text-green-400" />
+                                          : <Calendar className={`w-4 h-4 ${isSelected ? "text-white" : "text-gray-500"}`} />
+                                        }
+                                      </div>
+                                      <div>
+                                        <p className="text-sm font-medium text-white">{slot.day}</p>
+                                        <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                                          <Clock className="w-3 h-3" />{slot.time}
+                                          <MapPin className="w-3 h-3 ml-1" />{slot.room}
+                                        </div>
                                       </div>
                                     </div>
+                                    {booked && (
+                                      <span className="text-xs text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">Booked</span>
+                                    )}
+                                    {!booked && (
+                                      <span className="text-xs text-gray-500">{getSpotsLeft(slot.id)} spots</span>
+                                    )}
                                   </div>
-                                  {booked && (
-                                    <span className="text-xs text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">Booked</span>
-                                  )}
-                                  {!booked && (
-                                    <span className="text-xs text-gray-500">{getSpotsLeft(slot.id)} spots</span>
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
+                                </button>
+                              );
+                            })
+                          )}
                         </div>
                       </div>
                     )}

@@ -18,7 +18,7 @@ class ContactBookingController extends Controller
             'email'         => 'required|email|max:255',
             'phone'         => 'required|string|max:50',
             'class_type'    => 'required|string|max:100',
-            'schedule_id'   => 'required|integer',
+            'gym_class_id'  => 'required|integer', // 🔥 UPDATED: Matches the frontend and database!
             'schedule_day'  => 'required|string|max:20',
             'schedule_time' => 'required|string|max:10',
             'class_name'    => 'required|string|max:255',
@@ -29,7 +29,6 @@ class ContactBookingController extends Controller
         // Create the booking
         $booking = ContactBooking::create($validated);
 
-        // --- FIXED: Find the user manually ---
         // Since this is a public route, $request->user() is null. 
         // We proactively check Sanctum, or fallback to checking if the email belongs to a user.
         $user = auth('sanctum')->user() ?? User::where('email', $validated['email'])->first();

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useAuth } from "./AuthContext";
-import { SCHEDULE, CLASSES } from "../data/gymData";
+import { SCHEDULE, CLASSES } from "../Data/gymData";
 import api from "../../config/api";
 
 export interface Booking {

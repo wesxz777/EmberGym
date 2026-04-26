@@ -355,7 +355,7 @@ export function Home() {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src="public/TrainingImg/CardioTraining.jpg"
+            src="images/TrainingImg/CardioTraining.jpg"
             alt="Fitness gym"
             className="w-full h-full object-cover"
           />

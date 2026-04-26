@@ -127,7 +127,7 @@ export function Layout() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-0 group flex-shrink-0 z-10">
               <div className="group-hover:scale-110 transition-transform">
-                <img src="public\images\LogoImg\emberGymLogo.png" alt="Ember Gym" className="h-14 w-auto" />
+                <img src="images\LogoImg\emberGymLogo.png" alt="Ember Gym" className="h-14 w-auto" />
               </div>
               <span className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent ml-2 hidden sm:block uppercase">
                 EMBER GYM

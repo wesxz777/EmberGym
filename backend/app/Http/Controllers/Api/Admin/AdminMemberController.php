@@ -92,7 +92,6 @@ class AdminMemberController extends Controller
     {
         try {
             $member = User::where('role', 'member')->findOrFail($id);
-            \App\Models\ContactBooking::where('email', $member->email)->delete(); 
             $member->delete();
             return response()->json(['message' => 'Member deleted successfully.']);
         } catch (\Exception $e) {

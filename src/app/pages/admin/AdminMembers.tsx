@@ -47,7 +47,7 @@ export function AdminMembers() {
   const fetchMembers = async (page: number, search: string) => {
     setLoading(true);
     try {
-      const res = await api.get(`/admin/members?page=${page}&search=${search}`);
+const res = await api.get(`/api/admin/members?page=${page}&search=${search}`);
       setMembers(res.data.members?.data || []);
       setPagination({
         current_page: res.data.members?.current_page || 1,
@@ -83,7 +83,7 @@ export function AdminMembers() {
     
     setIsDeleting(true);
     try {
-      await api.delete(`/admin/members/${memberToDelete.id}`);
+      await api.delete(`/api/admin/members/${memberToDelete.id}`);
       const deletedName = `${memberToDelete.first_name} ${memberToDelete.last_name}`;
       
       fetchMembers(currentPage, searchTerm); 

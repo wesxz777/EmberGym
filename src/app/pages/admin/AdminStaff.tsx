@@ -44,7 +44,7 @@ export function AdminStaff() {
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [addForm, setAddForm] = useState({ first_name: "", last_name: "", role: "staff", email: "", phone: "+63", password: "", password_confirmation: "" }); // 🔥 Default to +63
+  const [addForm, setAddForm] = useState({ first_name: "", last_name: "", role: "staff", email: "", phone: "+63", password: "", password_confirmation: "" });
   const [formErrors, setFormErrors] = useState<any>({});
   
   const [showPassword, setShowPassword] = useState(false);
@@ -55,11 +55,12 @@ export function AdminStaff() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ first_name: "", last_name: "", role: "", email: "", phone: "+63" });
 
+  // 🔥 FIXED: This is a GET request to fetch the list, not a POST request!
   const fetchStaff = async (page: number, search: string, role: string) => {
     setLoading(true);
     try {
-    const res = await api.post('https://embergym.onrender.com/api/admin/staff', addForm);      
-    setStaffList(res.data.staff?.data || []);
+      const res = await api.get(`/api/admin/staff?page=${page}&search=${search}&role=${role}`);      
+      setStaffList(res.data.staff?.data || []);
       setPagination({
         current_page: res.data.staff?.current_page || 1,
         last_page: res.data.staff?.last_page || 1,
@@ -92,7 +93,6 @@ export function AdminStaff() {
     setIsAdding(true);
     setFormErrors({});
 
-    // 🔥 Phone validation rule before submitting
     const phoneRegex = /^\+63\d{9,10}$/;
     if (!phoneRegex.test(addForm.phone)) {
         setFormErrors({phone: ["Phone number must be +63 followed by 9 or 10 digits."]});
@@ -101,7 +101,7 @@ export function AdminStaff() {
     }
 
     try {
-// 🔥 Add the /api prefix so Laravel accepts the data!
+      // 🔥 Properly posting to the new route
       await api.post('/api/admin/staff', addForm);      
       setShowAddModal(false);
       setAddForm({ first_name: "", last_name: "", role: "staff", email: "", phone: "+63", password: "", password_confirmation: "" });
@@ -117,7 +117,6 @@ export function AdminStaff() {
 
   const openEditModal = (staff: StaffMember) => {
     setStaffToEdit(staff);
-    // Ensure phone starts with +63 if it doesn't already
     let safePhone = staff.phone;
     if (!safePhone.startsWith("+63")) {
       safePhone = "+63" + safePhone.replace(/\D/g, "");
@@ -140,7 +139,6 @@ export function AdminStaff() {
     setIsEditing(true);
     setFormErrors({});
 
-    // 🔥 Phone validation rule before submitting
     const phoneRegex = /^\+63\d{9,10}$/;
     if (!phoneRegex.test(editForm.phone)) {
         setFormErrors({phone: ["Phone number must be +63 followed by 9 or 10 digits."]});
@@ -234,7 +232,6 @@ export function AdminStaff() {
                             required 
                             value={addForm.first_name} 
                             onChange={e => {
-                                // 🔥 Clean and Capitalize
                                 const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
                                 setAddForm({...addForm, first_name: toTitleCase(cleanValue)})
                             }} 
@@ -249,7 +246,6 @@ export function AdminStaff() {
                             required 
                             value={addForm.last_name} 
                             onChange={e => {
-                                // 🔥 Clean and Capitalize
                                 const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
                                 setAddForm({...addForm, last_name: toTitleCase(cleanValue)})
                             }} 
@@ -261,7 +257,6 @@ export function AdminStaff() {
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">Role Assignment</label>
                       <select value={addForm.role} onChange={e => setAddForm({...addForm, role: e.target.value})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none appearance-none">
-                        {/* 🔥 REMOVED Super Admin Option */}
                         <option value="admin">Admin</option>
                         <option value="trainer">Trainer</option>
                         <option value="receptionist">Receptionist</option>
@@ -283,7 +278,6 @@ export function AdminStaff() {
                         placeholder="+63 9XX XXX XXXX" 
                         value={addForm.phone} 
                         onChange={e => {
-                            // 🔥 Lock to +63 and restrict to numbers
                             let val = e.target.value;
                             if (!val.startsWith("+63")) val = "+63"; 
                             const digits = val.slice(3).replace(/\D/g, ""); 
@@ -354,7 +348,6 @@ export function AdminStaff() {
                             required 
                             value={editForm.first_name} 
                             onChange={e => {
-                                // 🔥 Clean and Capitalize
                                 const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
                                 setEditForm({...editForm, first_name: toTitleCase(cleanValue)})
                             }} 
@@ -369,7 +362,6 @@ export function AdminStaff() {
                             required 
                             value={editForm.last_name} 
                             onChange={e => {
-                                // 🔥 Clean and Capitalize
                                 const cleanValue = e.target.value.replace(/[^a-zA-Z\s.-]/g, "").trimStart();
                                 setEditForm({...editForm, last_name: toTitleCase(cleanValue)})
                             }} 
@@ -381,7 +373,6 @@ export function AdminStaff() {
                     <div>
                       <label className="block text-xs font-medium text-gray-400 mb-1">Role Assignment</label>
                       <select value={editForm.role} onChange={e => setEditForm({...editForm, role: e.target.value})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none appearance-none">
-                        {/* 🔥 Keep Super Admin ONLY if editing an existing Super Admin, otherwise hide it */}
                         {staffToEdit.role === 'super_admin' ? (
                           <option value="super_admin">Super Admin</option>
                         ) : (
@@ -408,7 +399,6 @@ export function AdminStaff() {
                         required 
                         value={editForm.phone} 
                         onChange={e => {
-                             // 🔥 Lock to +63 and restrict to numbers
                              let val = e.target.value;
                              if (!val.startsWith("+63")) val = "+63"; 
                              const digits = val.slice(3).replace(/\D/g, ""); 

@@ -55,7 +55,7 @@ class AdminStaffController extends Controller
             'first_name' => 'required|string|max:100',
             'last_name'  => 'required|string|max:100',
             'role'       => 'required|in:admin,trainer,staff,receptionist',
-            'phone'      => 'required|digits:11|unique:users,phone', 
+            'phone'      => 'required|regex:/^\+63\d{10}$|unique:users,phone', 
             'password'   => 'required|string|min:8|confirmed',
             'email'      => [
                 'required',

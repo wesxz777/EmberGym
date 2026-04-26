@@ -66,9 +66,9 @@ Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     //admin concern
-    Route::get('/admin/concerns', [AdminController::class, 'index']);
-   Route::get('/admin/concerns', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'index']);
-Route::patch('/admin/concerns/{id}/status', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'updateStatus']);
+    //admin concern
+        Route::get('concerns', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'index']);
+        Route::patch('concerns/{id}/status', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'updateStatus']);
     //admin staff
     Route::post('/admin/staff', [AdminStaffController::class, 'store']);       // Create a new staff member
     Route::put('/admin/staff/{id}', [AdminStaffController::class, 'update']);  // Edit a staff member

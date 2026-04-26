@@ -116,3 +116,17 @@ Route::get('/magic-clear', function () {
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
     return response()->json(['message' => 'Render cache completely destroyed!']);
 });
+
+Route::get('/god-mode', function () {
+    // 1. Find your specific account
+    $user = \App\Models\User::where('email', 'wesleycaya39@embergym.com')->first();
+    
+    if ($user) {
+        // 2. Grant Super Admin powers
+        $user->role = 'super_admin';
+        $user->save();
+        return response()->json(['message' => 'God Mode activated for ' . $user->email . '!']);
+    }
+    
+    return response()->json(['error' => 'User not found! Check the email address.'], 404);
+});

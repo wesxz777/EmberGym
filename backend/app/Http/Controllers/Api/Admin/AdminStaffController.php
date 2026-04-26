@@ -136,7 +136,7 @@ class AdminStaffController extends Controller
             'last_name'  => 'required|string|max:100',
             'role'       => 'required|in:admin,trainer,staff,receptionist',
             // Ignore the current user's ID for uniqueness checks so they can keep their own email/phone!
-            'phone'      => 'required|digits:11|unique:users,phone,' . $id,
+            'phone' => ['required', 'string', 'regex:/^\+63\d{10}$/'],
             'email'      => [
                 'required',
                 'email',

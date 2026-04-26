@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
 import { BookingModal, BookingSource } from "../components/BookingModal";
-import { CLASSES, SCHEDULE, PLAN_WEEKLY_LIMITS, canPlanAccessClass } from "../data/gymData";
+import { CLASSES, SCHEDULE, PLAN_WEEKLY_LIMITS, canPlanAccessClass } from "../data/gymDatabase";
 
 export function Classes() {
   const { isLoggedIn, user } = useAuth();

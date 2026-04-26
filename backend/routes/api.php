@@ -65,7 +65,8 @@ Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
 
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+    
     Route::get('dashboard', [AdminDashboardController::class, 'index']);
 
     Route::apiResource('members',  AdminMemberController::class)->except(['store']);

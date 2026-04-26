@@ -200,3 +200,11 @@ Route::get('/debug/fix-roles', function () {
         ]);
     }
 });
+
+Route::get('/public/schedule', function () {
+    return \App\Models\GymClass::with(['template', 'trainer'])
+        ->withCount('bookings')
+        ->orderBy('class_date')
+        ->orderBy('start_time')
+        ->get();
+});

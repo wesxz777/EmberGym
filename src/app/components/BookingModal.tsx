@@ -26,7 +26,7 @@ import {
   PLAN_WEEKLY_LIMITS,
   canPlanAccessClass,
   ScheduleItem,
-} from "../data/gymdata";
+} from "../data/gymData";
 import api from "../../config/api";
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
@@ -118,7 +118,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
         email: user.email,
         phone: user.phone || "N/A",
         class_type: activeSlot.type,
-        schedule_id: activeSlot.id,
+        gym_class_id: activeSlot.id, // 🔥 CHANGED: This connects it to the Admin Panel!
         schedule_day: activeSlot.day,
         schedule_time: activeSlot.time,
         class_name: activeSlot.className,

@@ -79,7 +79,8 @@ class AdminMemberController extends Controller
             'first_name' => 'sometimes|string|max:100',
             'last_name'  => 'sometimes|string|max:100',
             'email'      => 'sometimes|email|unique:users,email,' . $id,
-            'phone'      => 'sometimes|string|unique:users,phone,' . $id,
+// 🔥 Add the regex rule to keep member phone numbers strictly +63 formatted!
+            'phone' => ['sometimes', 'string', 'regex:/^\+63\d{10}$/', 'unique:users,phone,' . $id],
             'status'     => 'sometimes|in:active,suspended',
         ]);
 

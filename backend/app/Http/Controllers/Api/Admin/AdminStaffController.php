@@ -105,8 +105,7 @@ class AdminStaffController extends Controller
             return response()->json(['message' => 'You cannot remove your own account while logged in.'], 400);
         }
 
-        // 🔥 The clean, relationship-only deletion
-        $targetUser->contactBookings()->delete();
+        // 🔥 Completely removed the contact_bookings check. Just delete the user directly!
         $targetUser->delete();
 
         return response()->json(['message' => 'Team member removed successfully.']);
@@ -152,6 +151,4 @@ class AdminStaffController extends Controller
 
         return response()->json(['message' => 'Staff member updated successfully.']);
     }
-
-    
 }

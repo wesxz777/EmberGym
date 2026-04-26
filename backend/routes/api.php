@@ -167,7 +167,12 @@ Route::get('/debug/classes', function () {
 
 Route::get('/debug/seed-classes', function () {
     try {
-        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'FixedGymSeeder']);
+        // 🔥 ADDED '--force' => true to bypass the production warning!
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--class' => 'FixedGymSeeder',
+            '--force' => true 
+        ]);
+        
         return response()->json([
             'status' => 'SUCCESS! Classes are now on the whiteboard.',
             'output' => \Illuminate\Support\Facades\Artisan::output()

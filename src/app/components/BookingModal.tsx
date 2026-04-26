@@ -26,7 +26,7 @@ import {
   PLAN_WEEKLY_LIMITS,
   canPlanAccessClass,
   ScheduleItem,
-} from "../data/gymData";
+} from "../data/gymdata";
 import api from "../../config/api";
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */

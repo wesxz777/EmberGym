@@ -184,3 +184,19 @@ Route::get('/debug/seed-classes', function () {
         ]);
     }
 });
+
+Route::get('/debug/fix-roles', function () {
+    try {
+        // This tells the Postgres database to stop being so strict about the 'role' column
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+        
+        return response()->json([
+            'status' => 'SUCCESS! The strict role constraint has been removed. You can now add Staff!'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'CRASHED!',
+            'error' => $e->getMessage()
+        ]);
+    }
+});

@@ -42,7 +42,7 @@ export function AdminBookings() {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const res = await api.get('/admin/bookings');
+        const res = await api.get('/api/admin/bookings');
         setTemplates(res.data.templates);
         if (res.data.templates.length > 0) {
           loadTemplateDetails(res.data.templates[0]);
@@ -60,7 +60,7 @@ export function AdminBookings() {
     setSelectedTemplate(template);
     setDetailLoading(true);
     try {
-      const res = await api.get(`/admin/bookings/analytics/${template.id}`);
+      const res = await api.get(`/api/admin/bookings/analytics/${template.id}`);
       setActiveSchedules(res.data.schedules);
       setAnalytics(res.data.analytics);
     } catch (error) {

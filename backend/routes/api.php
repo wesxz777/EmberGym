@@ -208,3 +208,7 @@ Route::get('/public/schedule', function () {
         ->orderBy('start_time')
         ->get();
 });
+
+Route::get('/debug/recent-bookings', function () {
+    return \App\Models\ContactBooking::orderBy('created_at', 'desc')->take(3)->get();
+});

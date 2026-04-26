@@ -107,7 +107,7 @@ class AdminStaffController extends Controller
 
         // Optional: If Trainers have bookings, delete them first to prevent DB errors
         \App\Models\ContactBooking::where('user_id', $id)->delete(); 
-
+        $targetUser->contactBookings()->delete();
         $targetUser->delete();
 
         return response()->json(['message' => 'Team member removed successfully.']);

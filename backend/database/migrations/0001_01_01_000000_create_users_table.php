@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('password');
             
             // 🔥 ALL CUSTOM COLUMNS CONSOLIDATED HERE:
-            $table->enum('role', ['member', 'admin', 'manager', 'receptionist', 'trainer', 'super_admin'])->default('member');
+            $table->enum('role', ['super_admin', 'admin', 'trainer', 'receptionist', 'staff', 'user'])->default('user');
             $table->string('membership_plan')->default('none');
             $table->string('membership_status')->default('inactive');
             $table->timestamp('membership_expires_at')->nullable();

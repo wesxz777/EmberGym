@@ -164,3 +164,18 @@ Route::get('/seed-classes', function () {
 Route::get('/debug/classes', function () {
     return \App\Models\GymClass::with('template')->get();
 });
+
+Route::get('/debug/seed-classes', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'FixedGymSeeder']);
+        return response()->json([
+            'status' => 'SUCCESS! Classes are now on the whiteboard.',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'CRASHED!',
+            'error' => $e->getMessage()
+        ]);
+    }
+});

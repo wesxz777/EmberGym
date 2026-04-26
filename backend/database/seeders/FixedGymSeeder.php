@@ -89,13 +89,13 @@ class FixedGymSeeder extends Seeder
         ];
 
         // 5. Inject into the database!
-        // 5. Inject into the database!
+       // 5. Inject into the database!
         foreach ($schedule as $slot) {
             $date = $daysMap[$slot['day']]->format('Y-m-d');
             $endTime = Carbon::parse($slot['time'])->addMinutes($templates[$slot['name']]->duration)->format('H:i');
 
             GymClass::create([
-                // REMOVED the 'name' line completely!
+                'name' => $slot['name'], // 🔥 PUTTING THIS BACK! I'm sorry!
                 'class_template_id' => $templates[$slot['name']]->id,
                 'trainer_id' => $trainer->id,
                 'room' => $slot['room'],

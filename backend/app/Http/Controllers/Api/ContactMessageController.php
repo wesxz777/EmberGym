@@ -23,15 +23,12 @@ class ContactMessageController extends Controller
         return response()->json(['message' => 'Your message has been sent successfully. Our team will contact you soon!'], 201);
     }
 
-    // 2. ADMIN: Get all messages (sorted with unread first)
     public function index()
-    {
-        $messages = ContactMessage::orderByRaw("FIELD(status, 'unread', 'read', 'resolved')")
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json($messages);
-    }
+        {
+            // Grab all messages, newest first!
+            $concerns = \App\Models\ContactMessage::orderBy('created_at', 'desc')->get();
+            return response()->json($concerns);
+        }
 
     // 3. ADMIN: Mark a message as resolved
     public function markResolved($id)

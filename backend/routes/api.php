@@ -65,16 +65,20 @@ Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
 
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    //admin concern
+    Route::get('/admin/concerns', [\App\Http\Controllers\Api\Admin\AdminConcernController::class, 'index']);
+    Route::patch('/admin/concerns/{id}/status', [\App\Http\Controllers\Api\Admin\AdminConcernController::class, 'updateStatus']);
+    //admin staff
     Route::post('/admin/staff', [AdminStaffController::class, 'store']);       // Create a new staff member
-Route::put('/admin/staff/{id}', [AdminStaffController::class, 'update']);  // Edit a staff member
-Route::delete('/admin/staff/{id}', [AdminStaffController::class, 'destroy']); // Delete a staff member
+    Route::put('/admin/staff/{id}', [AdminStaffController::class, 'update']);  // Edit a staff member
+    Route::delete('/admin/staff/{id}', [AdminStaffController::class, 'destroy']); // Delete a staff member
     Route::get('/admin/staff', [AdminStaffController::class, 'index']);
-    // Grab the main menu (all 8 classes)
-Route::get('/admin/bookings', [AdminBookingController::class, 'index']);
-
-// Grab the charts/data for a specific class when clicked
-Route::get('/admin/bookings/analytics/{id}', [AdminBookingController::class, 'getTemplateAnalytics']);
+    //adminbookin
+    Route::get('/admin/bookings', [AdminBookingController::class, 'index']);
+    Route::get('/admin/bookings/analytics/{id}', [AdminBookingController::class, 'getTemplateAnalytics']);
+    //adminmembers
     Route::get('/admin/members', [AdminMemberController::class, 'index']);
+    //admin dashboard
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 
     Route::get('dashboard', [AdminDashboardController::class, 'index']);

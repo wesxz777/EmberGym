@@ -66,22 +66,22 @@ Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     //admin concern
-    //admin concern
         Route::get('concerns', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'index']);
         Route::patch('concerns/{id}/status', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'updateStatus']);
-    //admin staff
-    Route::post('/admin/staff', [AdminStaffController::class, 'store']);       // Create a new staff member
-    Route::put('/admin/staff/{id}', [AdminStaffController::class, 'update']);  // Edit a staff member
-    Route::delete('/admin/staff/{id}', [AdminStaffController::class, 'destroy']); // Delete a staff member
-    Route::get('/admin/staff', [AdminStaffController::class, 'index']);
-    //adminbookin
-    Route::get('/admin/bookings', [AdminBookingController::class, 'index']);
-    Route::get('/admin/bookings/analytics/{id}', [AdminBookingController::class, 'getTemplateAnalytics']);
-    //adminmembers
-    Route::get('/admin/members', [AdminMemberController::class, 'index']);
+   //admin staff
+    Route::post('staff', [AdminStaffController::class, 'store']);
+    Route::put('staff/{id}', [AdminStaffController::class, 'update']);
+    Route::delete('staff/{id}', [AdminStaffController::class, 'destroy']);
+    Route::get('staff', [AdminStaffController::class, 'index']);
+    
+    //admin bookings
+    Route::get('bookings', [AdminBookingController::class, 'index']);
+    Route::get('bookings/analytics/{id}', [AdminBookingController::class, 'getTemplateAnalytics']);
+    
+    //admin members
+    Route::get('members', [AdminMemberController::class, 'index']);
+    
     //admin dashboard
-    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
-
     Route::get('dashboard', [AdminDashboardController::class, 'index']);
 
     Route::apiResource('members',  AdminMemberController::class)->except(['store']);

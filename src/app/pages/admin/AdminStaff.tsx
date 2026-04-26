@@ -101,7 +101,8 @@ export function AdminStaff() {
     }
 
     try {
-      await api.post('/admin/staff', addForm);
+// 🔥 Add the /api prefix so Laravel accepts the data!
+      await api.post('/api/admin/staff', addForm);      
       setShowAddModal(false);
       setAddForm({ first_name: "", last_name: "", role: "staff", email: "", phone: "+63", password: "", password_confirmation: "" });
       fetchStaff(currentPage, searchTerm, roleFilter);

@@ -11,7 +11,7 @@ class ContactBooking extends Model
     'email',
     'phone',
     'class_type',
-    'gym_class_id', // 🔥 MUST BE HERE!
+    'schedule_id', 
     'schedule_day',
     'schedule_time',
     'class_name',

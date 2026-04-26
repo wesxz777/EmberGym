@@ -25,7 +25,7 @@ import {
   PLAN_WEEKLY_LIMITS,
   canPlanAccessClass,
   ScheduleItem,
-} from "../data/gymData"; // 🔥 REMOVED 'SCHEDULE' FROM HERE!
+} from "../data/gymdata";
 import api from "../../config/api";
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
@@ -66,7 +66,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const [selectedSlot, setSelectedSlot] = useState<ScheduleItem | null>(null);
   const [step, setStep] = useState<"pick" | "confirm" | "success" | "cancel">("pick");
 
-  // 🔥 NEW: Store live slots from the database
   const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
 
   /* Reset on open */
@@ -88,7 +87,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const classId = source?.classId;
   const classData = CLASSES.find((c) => c.id === classId);
 
-  // 🔥 NEW: Fetch the real schedule for this specific class when the modal opens
   useEffect(() => {
     if (isOpen && classData) {
       api.get('/api/public/schedule')
@@ -100,7 +98,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
           const formattedSlots = slotsForThisClass.map((c: any) => {
             const dateObj = new Date(c.class_date);
             return {
-              id: c.id, // 🔥 This is the REAL live database ID!
+              id: c.id, 
               className: classData.name,
               type: classData.type,
               instructor: c.trainer ? `${c.trainer.first_name} ${c.trainer.last_name}` : "TBA",
@@ -119,7 +117,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
 
   if (!isOpen || !source) return null;
 
-  // 🔥 UPDATED: Use liveSlots instead of the hardcoded SCHEDULE array
   const availableSlots = liveSlots;
   const activeSlot = selectedSlot;
 
@@ -143,7 +140,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
         email: user.email,
         phone: user.phone || "N/A",
         class_type: activeSlot.type,
-        gym_class_id: activeSlot.id, // Connections to Admin Panel
+        schedule_id: activeSlot.id, // 🔥 REVERTED: Back to schedule_id to fix 500 error!
         schedule_day: activeSlot.day,
         schedule_time: activeSlot.time,
         class_name: activeSlot.className,
@@ -201,7 +198,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
@@ -211,7 +207,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
             className="fixed inset-0 z-[60] bg-black/75 backdrop-blur-sm"
           />
 
-          {/* Modal */}
           <motion.div
             key="modal"
             initial={{ opacity: 0, scale: 0.94, y: 24 }}
@@ -223,7 +218,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
           >
             <div className="bg-gray-950 border border-orange-500/20 rounded-2xl w-full max-w-lg shadow-2xl shadow-black/60 overflow-hidden">
 
-              {/* Header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-orange-500/10">
                 <h2 className="font-bold text-white text-lg">
                   {step === "success" ? "Booking Confirmed!" :
@@ -241,7 +235,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
 
               <div className="p-6">
 
-                {/* ── NOT LOGGED IN ── */}
                 {!isLoggedIn && (
                   <div className="text-center py-4">
                     <div className="bg-orange-500/10 border border-orange-500/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -252,36 +245,16 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       You need an account to book classes at Ember Gym. Sign up for free to get started.
                     </p>
                     <div className="flex gap-3">
-                      <Link
-                        to="/login"
-                        onClick={onClose}
-                        className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 py-3 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all"
-                      >
-                        <LogIn className="w-4 h-4" />
-                        Log In
-                      </Link>
-                      <Link
-                        to="/signup"
-                        onClick={onClose}
-                        className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 border border-orange-500/20 py-3 rounded-xl font-semibold text-sm transition-all"
-                      >
-                        <UserPlus className="w-4 h-4" />
-                        Sign Up Free
-                      </Link>
+                      <Link to="/login" onClick={onClose} className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 py-3 rounded-xl font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all"><LogIn className="w-4 h-4" />Log In</Link>
+                      <Link to="/signup" onClick={onClose} className="flex-1 flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-700 border border-orange-500/20 py-3 rounded-xl font-semibold text-sm transition-all"><UserPlus className="w-4 h-4" />Sign Up Free</Link>
                     </div>
                   </div>
                 )}
 
-                {/* ── LOGGED IN ── */}
                 {isLoggedIn && classData && (
                   <>
-                    {/* Class overview */}
                     <div className="flex items-start gap-4 mb-5">
-                      <img
-                        src={classData.image}
-                        alt={classData.name}
-                        className="w-20 h-20 rounded-xl object-cover shrink-0"
-                      />
+                      <img src={classData.image} alt={classData.name} className="w-20 h-20 rounded-xl object-cover shrink-0" />
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <h3 className="font-bold text-white">{classData.name}</h3>
@@ -295,129 +268,71 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       </div>
                     </div>
 
-                    {/* ── PLAN NOT ALLOWED ── */}
                     {!planAllowed && (
                       <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-4">
                         <div className="flex items-start gap-3">
                           <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
                           <div>
                             <p className="font-semibold text-red-300 text-sm mb-1">Plan Restriction</p>
-                            <p className="text-red-400/80 text-xs">
-                              <strong>{classData.name}</strong> requires one of:{" "}
-                              {classData.allowedPlans.join(", ")} plan(s).
-                              Your current plan is <strong>{plan}</strong>.
-                            </p>
-                            <Link
-                              to="/membership"
-                              onClick={onClose}
-                              className="inline-flex items-center gap-1 text-orange-400 text-xs font-medium mt-2 hover:text-orange-300 transition-colors"
-                            >
-                              Upgrade your plan <ChevronRight className="w-3 h-3" />
-                            </Link>
+                            <p className="text-red-400/80 text-xs"><strong>{classData.name}</strong> requires one of: {classData.allowedPlans.join(", ")} plan(s). Your current plan is <strong>{plan}</strong>.</p>
+                            <Link to="/membership" onClick={onClose} className="inline-flex items-center gap-1 text-orange-400 text-xs font-medium mt-2 hover:text-orange-300 transition-colors">Upgrade your plan <ChevronRight className="w-3 h-3" /></Link>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* ── WEEKLY LIMIT (only for Basic) ── */}
                     {planAllowed && atWeeklyLimit && plan === "Basic" && !slotAlreadyBooked && (
                       <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 mb-4">
                         <div className="flex items-start gap-3">
                           <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
                           <div>
                             <p className="font-semibold text-yellow-300 text-sm mb-1">Weekly Limit Reached</p>
-                            <p className="text-yellow-400/80 text-xs">
-                              Basic members can book up to <strong>2 classes per week</strong>. You've used all {weeklyLimit} slots.
-                            </p>
-                            <Link
-                              to="/membership"
-                              onClick={onClose}
-                              className="inline-flex items-center gap-1 text-orange-400 text-xs font-medium mt-2 hover:text-orange-300 transition-colors"
-                            >
-                              Upgrade for unlimited classes <ChevronRight className="w-3 h-3" />
-                            </Link>
+                            <p className="text-yellow-400/80 text-xs">Basic members can book up to <strong>2 classes per week</strong>. You've used all {weeklyLimit} slots.</p>
+                            <Link to="/membership" onClick={onClose} className="inline-flex items-center gap-1 text-orange-400 text-xs font-medium mt-2 hover:text-orange-300 transition-colors">Upgrade for unlimited classes <ChevronRight className="w-3 h-3" /></Link>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* ── WEEKLY USAGE BAR (Basic) ── */}
                     {plan === "Basic" && planAllowed && !slotAlreadyBooked && (
                       <div className="bg-gray-900 rounded-xl p-3 mb-4">
                         <div className="flex justify-between text-xs text-gray-400 mb-1.5">
                           <span>Weekly bookings used</span>
-                          <span className={weeklyCount >= 2 ? "text-red-400 font-semibold" : "text-orange-400"}>
-                            {weeklyCount} / {weeklyLimit}
-                          </span>
+                          <span className={weeklyCount >= 2 ? "text-red-400 font-semibold" : "text-orange-400"}>{weeklyCount} / {weeklyLimit}</span>
                         </div>
                         <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${weeklyCount >= 2 ? "bg-red-500" : "bg-gradient-to-r from-orange-500 to-red-500"}`}
-                            style={{ width: `${Math.min((weeklyCount / weeklyLimit) * 100, 100)}%` }}
-                          />
+                          <div className={`h-full rounded-full transition-all ${weeklyCount >= 2 ? "bg-red-500" : "bg-gradient-to-r from-orange-500 to-red-500"}`} style={{ width: `${Math.min((weeklyCount / weeklyLimit) * 100, 100)}%` }} />
                         </div>
                       </div>
                     )}
 
-                    {/* ── SUCCESS / CANCEL feedback ── */}
                     {(step === "success" || step === "cancel") && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className={`rounded-xl p-5 text-center mb-4 ${step === "success" ? "bg-green-500/10 border border-green-500/20" : "bg-gray-800/60 border border-gray-700"}`}
-                      >
+                      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className={`rounded-xl p-5 text-center mb-4 ${step === "success" ? "bg-green-500/10 border border-green-500/20" : "bg-gray-800/60 border border-gray-700"}`}>
                         <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 ${step === "success" ? "bg-green-500/20" : "bg-gray-700"}`}>
-                          {step === "success"
-                            ? <Check className="w-6 h-6 text-green-400" />
-                            : <Trash2 className="w-6 h-6 text-gray-400" />
-                          }
+                          {step === "success" ? <Check className="w-6 h-6 text-green-400" /> : <Trash2 className="w-6 h-6 text-gray-400" />}
                         </div>
-                        <p className="font-semibold text-white mb-1">
-                          {step === "success" ? "You're all set!" : "Booking removed"}
-                        </p>
-                        <p className="text-sm text-gray-400">
-                          {step === "success" && activeSlot
-                            ? `${activeSlot.className} on ${activeSlot.day} at ${activeSlot.time} has been added to your schedule.`
-                            : "Your booking has been cancelled. The spot is now available."}
-                        </p>
-                        
+                        <p className="font-semibold text-white mb-1">{step === "success" ? "You're all set!" : "Booking removed"}</p>
+                        <p className="text-sm text-gray-400">{step === "success" && activeSlot ? `${activeSlot.className} on ${activeSlot.day} at ${activeSlot.time} has been added to your schedule.` : "Your booking has been cancelled. The spot is now available."}</p>
                         {step === "success" ? (
-                           <Link
-                             to="/schedule"
-                             onClick={onClose}
-                             className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all inline-block"
-                           >
-                             View My Schedule
-                           </Link>
+                           <Link to="/schedule" onClick={onClose} className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all inline-block">View My Schedule</Link>
                         ) : (
-                          <button
-                            onClick={onClose}
-                            className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all"
-                          >
-                            Close
-                          </button>
+                          <button onClick={onClose} className="mt-4 bg-gradient-to-r from-orange-500 to-red-600 px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-orange-500/30 transition-all">Close</button>
                         )}
                       </motion.div>
                     )}
 
-                    {/* ── ALREADY BOOKED — cancel option ── */}
                     {step !== "success" && step !== "cancel" && slotAlreadyBooked && activeSlot && (
                       <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="bg-green-500/20 p-2 rounded-lg">
-                            <Check className="w-4 h-4 text-green-400" />
-                          </div>
+                          <div className="bg-green-500/20 p-2 rounded-lg"><Check className="w-4 h-4 text-green-400" /></div>
                           <div>
                             <p className="font-semibold text-green-300 text-sm">Already Booked</p>
-                            <p className="text-green-400/70 text-xs">
-                              {activeSlot.day} at {activeSlot.time} · {activeSlot.room}
-                            </p>
+                            <p className="text-green-400/70 text-xs">{activeSlot.day} at {activeSlot.time} · {activeSlot.room}</p>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* ── SLOT PICKER ── */}
                     {step === "pick" && planAllowed && !slotAlreadyBooked && (
                       <div className="mb-4">
                         <p className="text-xs font-medium text-gray-400 mb-2">Select a time slot</p>
@@ -433,21 +348,12 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                                   key={slot.id}
                                   onClick={() => !booked && setSelectedSlot(slot)}
                                   disabled={booked}
-                                  className={`w-full text-left rounded-xl border p-3 transition-all ${
-                                    booked
-                                      ? "border-green-500/20 bg-green-500/5 opacity-70 cursor-default"
-                                      : isSelected
-                                        ? "border-orange-500 bg-orange-500/10"
-                                        : "border-gray-700 bg-gray-900/50 hover:border-orange-500/50"
-                                  }`}
+                                  className={`w-full text-left rounded-xl border p-3 transition-all ${booked ? "border-green-500/20 bg-green-500/5 opacity-70 cursor-default" : isSelected ? "border-orange-500 bg-orange-500/10" : "border-gray-700 bg-gray-900/50 hover:border-orange-500/50"}`}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isSelected ? "bg-orange-500" : booked ? "bg-green-500/20" : "bg-gray-800"}`}>
-                                        {booked
-                                          ? <Check className="w-4 h-4 text-green-400" />
-                                          : <Calendar className={`w-4 h-4 ${isSelected ? "text-white" : "text-gray-500"}`} />
-                                        }
+                                        {booked ? <Check className="w-4 h-4 text-green-400" /> : <Calendar className={`w-4 h-4 ${isSelected ? "text-white" : "text-gray-500"}`} />}
                                       </div>
                                       <div>
                                         <p className="text-sm font-medium text-white">{slot.day}</p>
@@ -457,12 +363,8 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                                         </div>
                                       </div>
                                     </div>
-                                    {booked && (
-                                      <span className="text-xs text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">Booked</span>
-                                    )}
-                                    {!booked && (
-                                      <span className="text-xs text-gray-500">{getSpotsLeft(slot.id)} spots</span>
-                                    )}
+                                    {booked && <span className="text-xs text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">Booked</span>}
+                                    {!booked && <span className="text-xs text-gray-500">{getSpotsLeft(slot.id)} spots</span>}
                                   </div>
                                 </button>
                               );
@@ -472,67 +374,24 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       </div>
                     )}
 
-                    {/* ── ACTION BUTTONS ── */}
                     {step === "pick" && (
                       <div className="flex gap-3">
-                        {/* Cancel existing booking */}
                         {slotAlreadyBooked && (
                           <>
-                            <button
-                              onClick={onClose}
-                              className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 hover:bg-gray-800 text-sm font-medium transition-colors"
-                            >
-                              Keep Booking
-                            </button>
-                            <button
-                              onClick={handleCancel}
-                              className="flex-1 py-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              Cancel Booking
-                            </button>
+                            <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 hover:bg-gray-800 text-sm font-medium transition-colors">Keep Booking</button>
+                            <button onClick={handleCancel} className="flex-1 py-3 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-sm font-medium transition-colors flex items-center justify-center gap-2"><Trash2 className="w-4 h-4" />Cancel Booking</button>
                           </>
                         )}
-
-                        {/* Book button */}
                         {!slotAlreadyBooked && planAllowed && (
                           <>
-                            <button
-                              onClick={onClose}
-                              className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 hover:bg-gray-800 text-sm font-medium transition-colors"
-                            >
-                              Close
+                            <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-400 hover:bg-gray-800 text-sm font-medium transition-colors">Close</button>
+                            <button onClick={handleConfirm} disabled={!selectedSlot || atWeeklyLimit || isSubmitting} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                              {isSubmitting ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Processing...</> : <><Check className="w-4 h-4" />{!selectedSlot ? "Select a Slot" : "Confirm Booking"}</>}
                             </button>
-                            <button
-                            onClick={handleConfirm}
-                            disabled={!selectedSlot || atWeeklyLimit || isSubmitting}
-                            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                          >
-                            {isSubmitting ? (
-                              <>
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                Processing...
-                              </>
-                            ) : (
-                              <>
-                                <Check className="w-4 h-4" />
-                                {!selectedSlot ? "Select a Slot" : "Confirm Booking"}
-                              </>
-                            )}
-                          </button>
                           </>
                         )}
-
-                        {/* Upgrade prompt button */}
                         {!planAllowed && (
-                          <Link
-                            to="/membership"
-                            onClick={onClose}
-                            className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-semibold text-sm text-center hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-2"
-                          >
-                            <Crown className="w-4 h-4" />
-                            Upgrade Plan
-                          </Link>
+                          <Link to="/membership" onClick={onClose} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-semibold text-sm text-center hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-2"><Crown className="w-4 h-4" />Upgrade Plan</Link>
                         )}
                       </div>
                     )}

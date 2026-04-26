@@ -18,7 +18,7 @@ class ContactBookingController extends Controller
             'email'         => 'required|email|max:255',
             'phone'         => 'required|string|max:50',
             'class_type'    => 'required|string|max:100',
-            'gym_class_id'  => 'required|integer', // 🔥 UPDATED: Matches the frontend and database!
+            'schedule_id' => 'required|integer',
             'schedule_day'  => 'required|string|max:20',
             'schedule_time' => 'required|string|max:10',
             'class_name'    => 'required|string|max:255',

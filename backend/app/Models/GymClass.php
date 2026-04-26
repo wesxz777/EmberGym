@@ -26,11 +26,10 @@ class GymClass extends Model
         return $this->belongsTo(User::class, 'trainer_id');
     }
 
-    public function bookings()
-    {
-        return $this->hasMany(ContactBooking::class, 'gym_class_id');
-    }
-
+   public function bookings()
+{
+    return $this->hasMany(ContactBooking::class, 'schedule_id'); // 🔥 Link via schedule_id
+}
     public function template()
     {
         return $this->belongsTo(ClassTemplate::class, 'class_template_id');

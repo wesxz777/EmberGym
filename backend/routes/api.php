@@ -83,7 +83,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     
     //admin dashboard
     Route::get('dashboard', [AdminDashboardController::class, 'index']);
-    
+
     Route::apiResource('members',  AdminMemberController::class)->except(['store']);
     
     Route::get('staff', [AdminStaffController::class, 'index']);
@@ -159,4 +159,8 @@ Route::get('/seed-classes', function () {
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
+});
+
+Route::get('/debug/classes', function () {
+    return \App\Models\GymClass::with('template')->get();
 });

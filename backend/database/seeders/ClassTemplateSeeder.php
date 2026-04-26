@@ -60,7 +60,40 @@ class ClassTemplateSeeder extends Seeder
                 'benefits' => ['Core stability', 'Posture improvement', 'Mind-body connection'],
                 'allowed_plans' => ['Basic', 'Pro', 'Elite'],
             ],
+            [
+                'name' => 'Boxing Cardio',
+                'type' => 'Cardio',
+                'duration' => 55,
+                'intensity' => 'High',
+                'description' => 'Learn boxing techniques while getting an incredible full-body workout.',
+                'image' => 'https://images.unsplash.com/photo-1734191797121-de71b48ba038?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxib3hpbmclMjBmaXRuZXNzJTIwdHJhaW5pbmd8ZW58MXx8fHwxNzcwMjcxNTEwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+                'benefits' => ['Full-body workout', 'Stress relief', 'Coordination'],
+                'allowed_plans' => ['Pro', 'Elite'],
+            ],
+            [
+                'name' => 'CrossFit WOD',
+                'type' => 'HIIT',
+                'duration' => 60,
+                'intensity' => 'High',
+                'description' => 'Constantly varied functional movements performed at high intensity.',
+                'image' => 'https://images.unsplash.com/photo-1467818488384-3a21f2b79959?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm9zc2ZpdCUyMHdvcmtvdXR8ZW58MXx8fHwxNzcwMjcxNTExfDA&ixlib=rb-4.1.0&q=80&w=1080',
+                'benefits' => ['Functional fitness', 'Community', 'Overall conditioning'],
+                'allowed_plans' => ['Elite'],
+            ],
+            [
+                'name' => 'Zumba Dance Party',
+                'type' => 'Cardio',
+                'duration' => 45,
+                'intensity' => 'Medium',
+                'description' => 'Dance-based cardio workout featuring Latin and international music.',
+                'image' => 'https://images.unsplash.com/photo-1759375201813-572504b6ba9e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx6dW1iYSUyMGRhbmNlJTIwZml0bmVzc3xlbnwxfHx8fDE3NzAyNzE1MTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
+                'benefits' => ['Cardiovascular health', 'Coordination', 'Fun & social'],
+                'allowed_plans' => ['Basic', 'Pro', 'Elite'],
+            ],
         ];
+
+        // Wipe existing templates to avoid duplicates if running multiple times
+        ClassTemplate::truncate();
 
         foreach ($classes as $class) {
             ClassTemplate::create($class);

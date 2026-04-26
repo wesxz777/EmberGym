@@ -140,7 +140,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
         email: user.email,
         phone: user.phone || "N/A",
         class_type: activeSlot.type,
-        schedule_id: activeSlot.id, // 🔥 REVERTED: Back to schedule_id to fix 500 error!
+        schedule_id: activeSlot.id, 
         schedule_day: activeSlot.day,
         schedule_time: activeSlot.time,
         class_name: activeSlot.className,

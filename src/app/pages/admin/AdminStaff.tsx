@@ -93,9 +93,10 @@ export function AdminStaff() {
     setIsAdding(true);
     setFormErrors({});
 
-    const phoneRegex = /^\+63\d{9,10}$/;
+    // 🔥 STRICT VALIDATION: +63 followed by EXACTLY 10 digits
+    const phoneRegex = /^\+63\d{10}$/;
     if (!phoneRegex.test(addForm.phone)) {
-        setFormErrors({phone: ["Phone number must be +63 followed by 9 or 10 digits."]});
+        setFormErrors({phone: ["Phone number must be +63 followed by exactly 10 digits."]});
         setIsAdding(false);
         return;
     }
@@ -139,9 +140,10 @@ export function AdminStaff() {
     setIsEditing(true);
     setFormErrors({});
 
-    const phoneRegex = /^\+63\d{9,10}$/;
+    // 🔥 STRICT VALIDATION: +63 followed by EXACTLY 10 digits
+    const phoneRegex = /^\+63\d{10}$/;
     if (!phoneRegex.test(editForm.phone)) {
-        setFormErrors({phone: ["Phone number must be +63 followed by 9 or 10 digits."]});
+        setFormErrors({phone: ["Phone number must be +63 followed by exactly 10 digits."]});
         setIsEditing(false);
         return;
     }
@@ -279,8 +281,13 @@ export function AdminStaff() {
                         value={addForm.phone} 
                         onChange={e => {
                             let val = e.target.value;
-                            if (!val.startsWith("+63")) val = "+63"; 
+                            // 🔥 1. Ensure it always starts with +63
+                            if (!val.startsWith("+63")) {
+                                val = "+63"; 
+                            }
+                            // 🔥 2. Extract only digits after the +63
                             const digits = val.slice(3).replace(/\D/g, ""); 
+                            // 🔥 3. Limit to exactly 10 digits
                             const limitedDigits = digits.slice(0, 10); 
                             setAddForm({...addForm, phone: "+63" + limitedDigits});
                         }} 
@@ -400,8 +407,13 @@ export function AdminStaff() {
                         value={editForm.phone} 
                         onChange={e => {
                              let val = e.target.value;
-                             if (!val.startsWith("+63")) val = "+63"; 
+                             // 🔥 1. Ensure it always starts with +63
+                             if (!val.startsWith("+63")) {
+                                 val = "+63"; 
+                             }
+                             // 🔥 2. Extract only digits after the +63
                              const digits = val.slice(3).replace(/\D/g, ""); 
+                             // 🔥 3. Limit to exactly 10 digits
                              const limitedDigits = digits.slice(0, 10); 
                              setEditForm({...editForm, phone: "+63" + limitedDigits});
                         }} 

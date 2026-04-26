@@ -69,8 +69,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 Route::put('/admin/staff/{id}', [AdminStaffController::class, 'update']);  // Edit a staff member
 Route::delete('/admin/staff/{id}', [AdminStaffController::class, 'destroy']); // Delete a staff member
     Route::get('/admin/staff', [AdminStaffController::class, 'index']);
-    Route::get('/admin/bookings', [AdminBookingController::class, 'index']);
-    Route::get('/admin/bookings/analytics/{id}', [AdminBookingController::class, 'analytics']);
+    // Grab the main menu (all 8 classes)
+Route::get('/admin/bookings', [AdminBookingController::class, 'index']);
+
+// Grab the charts/data for a specific class when clicked
+Route::get('/admin/bookings/analytics/{id}', [AdminBookingController::class, 'getTemplateAnalytics']);
     Route::get('/admin/members', [AdminMemberController::class, 'index']);
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 

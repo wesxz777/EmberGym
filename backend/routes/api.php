@@ -138,3 +138,17 @@ Route::get('/god-mode', function () {
     
     return response()->json(['error' => 'User not found! Check the email address.'], 404);
 });
+
+Route::get('/seed-classes', function () {
+    try {
+        // This command tells Laravel to run your specific seeder
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--class' => 'ClassTemplateSeeder',
+            '--force' => true // Required to run in production
+        ]);
+        
+        return response()->json(['message' => 'Gym classes successfully seeded!']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});

@@ -65,6 +65,12 @@ Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
 
 // ─── Admin routes ─────────────────────────────────────────────────────────────
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    Route::post('/admin/staff', [AdminStaffController::class, 'store']);       // Create a new staff member
+Route::put('/admin/staff/{id}', [AdminStaffController::class, 'update']);  // Edit a staff member
+Route::delete('/admin/staff/{id}', [AdminStaffController::class, 'destroy']); // Delete a staff member
+    Route::get('/admin/staff', [AdminStaffController::class, 'index']);
+    Route::get('/admin/bookings', [AdminBookingController::class, 'index']);
+    Route::get('/admin/bookings/analytics/{id}', [AdminBookingController::class, 'analytics']);
     Route::get('/admin/members', [AdminMemberController::class, 'index']);
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 

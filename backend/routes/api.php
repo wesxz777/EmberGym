@@ -208,3 +208,32 @@ Route::get('/debug/xray', function () {
 
 // Make sure this route exists and points to 'getSchedule'
 Route::get('/public/schedule', [App\Http\Controllers\Api\PublicController::class, 'getSchedule']);
+
+Route::get('/debug/make-super-admin', function () {
+    try {
+        // Use updateOrCreate so if you accidentally refresh the page, it updates instead of crashing
+        $admin = \App\Models\User::updateOrCreate(
+            ['email' => 'wesley@embergym.com'], // The target email
+            [
+                'first_name' => 'Wesley',
+                'last_name' => 'Caya', // Using the name from your earlier checkout test!
+                'password' => bcrypt('akongapalasiWesley@1'), // Safely encrypts the password
+                'role' => 'super_admin',
+                'phone' => '09123456789', // Placeholder phone
+                'membership_plan' => 'Elite',
+                'membership_status' => 'active',
+                'membership' => 'Elite'
+            ]
+        );
+        
+        return response()->json([
+            'status' => 'SUCCESS! The Super Admin has been created.',
+            'admin' => [
+                'email' => $admin->email,
+                'role' => $admin->role
+            ]
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});

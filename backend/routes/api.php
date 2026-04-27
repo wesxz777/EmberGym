@@ -112,3 +112,25 @@ Route::get('/debug/peek-users', function () {
         'all_user_data' => \App\Models\User::all(['id', 'email', 'role', 'membership_plan'])
     ]);
 });
+
+Route::get('/debug/fix-columns', function () {
+    try {
+        \Illuminate\Support\Facades\Schema::table('users', function ($table) {
+            // Check and add 'membership' if missing
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'membership')) {
+                $table->string('membership')->nullable();
+            }
+            // Check and add 'has_purchased_before' if missing
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'has_purchased_before')) {
+                $table->boolean('has_purchased_before')->default(false);
+            }
+            // Check and add 'role' if missing
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+                $table->string('role')->default('user');
+            }
+        });
+        return response()->json(['message' => 'Database columns added successfully!']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+});

@@ -140,4 +140,15 @@ class AuthController extends Controller
 
     return response()->json(['message' => 'Password updated successfully.']);
 }
+
+// 🔥 ADD THIS FUNCTION (if you don't already have it)
+    public function logout(Request $request)
+    {
+        // This deletes the user's current access token, officially logging them out of the backend
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logged out successfully'
+        ]);
+    }
 }

@@ -50,7 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
-    Route::post('/notifications/mark-read', [NotificationController::class, 'markAllAsRead']);
+    
+    //logout
+    Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
     
 });
 
@@ -237,4 +239,11 @@ Route::get('/debug/create-admin', function () {
             'error' => $e->getMessage()
         ]);
     }
+});
+
+Route::get('/debug/clear-cache', function() {
+    \Illuminate\Support\Facades\Artisan::call('route:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    return response()->json(['message' => 'All caches cleared! Laravel is awake.']);
 });

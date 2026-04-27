@@ -377,7 +377,7 @@ export function Layout() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <img src="public\LogoImg\emberGymLogo.png" alt="Ember Gym" className="h-20 w-auto" />
+                <img src="images/LogoImg/emberGymLogo.png" alt="Ember Gym" className="h-20 w-auto" />
                 <span className="text-xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent uppercase">
                   EMBER GYM
                 </span>

@@ -14,7 +14,8 @@ import { Link } from "react-router";
 import { AuthGate } from "../components/AuthGate";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
-import api from "../../config/api"; // Ensure this path is correct for your setup!
+import { SCHEDULE } from "../data/gymDatabase"; // 🔥 NEW: Importing your local dummy schedules
+import api from "../../config/api"; 
 
 // Define the interface locally so we don't rely on the hardcoded file
 export interface ScheduleItem {
@@ -48,38 +49,49 @@ export function Schedule() {
   const types = ["All", "Yoga", "HIIT", "Strength", "Cardio", "Pilates"];
   const times = ["All", "Morning (6-12)", "Afternoon (12-17)", "Evening (17-21)"];
 
-  // 🔥 NEW: Fetch the real classes from Postgres
+  // 🔥 NEW: Hybrid Fetch Logic
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
+        setIsLoading(true);
         const res = await api.get('/api/public/schedule');
         
-        // Map the backend data to fit our beautiful frontend UI
-        const formatted = res.data.map((c: any) => {
-          const dateObj = new Date(c.class_date);
-          return {
-            id: c.id,
-            className: c.template?.name || c.name,
-            type: c.template?.type || "Class",
-            instructor: c.trainer ? `${c.trainer.first_name} ${c.trainer.last_name}` : "TBA",
-            time: c.start_time.substring(0, 5), // '06:00:00' -> '06:00'
-            day: dateObj.toLocaleDateString("en-US", { weekday: "long" }),
-            duration: c.template?.duration || 60,
-            room: c.room,
-            spotsLeft: c.max_capacity - (c.bookings_count || 0)
-          };
-        });
-        setLiveSchedule(formatted);
+        // 🔥 HYBRID LOGIC: Check if the live API has data
+        if (res.data && res.data.length > 0) {
+          // Map the backend data to fit our beautiful frontend UI
+          const formatted = res.data.map((c: any) => {
+            const dateObj = new Date(c.class_date);
+            return {
+              id: c.id,
+              className: c.template?.name || c.name,
+              type: c.template?.type || "Class",
+              instructor: c.trainer ? `${c.trainer.first_name} ${c.trainer.last_name}` : "TBA",
+              time: c.start_time.substring(0, 5), // '06:00:00' -> '06:00'
+              day: dateObj.toLocaleDateString("en-US", { weekday: "long" }),
+              duration: c.template?.duration || 60,
+              room: c.room,
+              spotsLeft: c.max_capacity - (c.bookings_count || 0)
+            };
+          });
+          setLiveSchedule(formatted);
+        } else {
+          // 🔥 FALLBACK: Live database is empty, use dummy data
+          console.log("Live DB empty. Falling back to local schedule data.");
+          setLiveSchedule(SCHEDULE);
+        }
       } catch (error) {
-        console.error("Failed to load live schedule", error);
+        // 🔥 FALLBACK: API crashed/Render is asleep, use dummy data
+        console.error("Failed to load live schedule, falling back to local data.", error);
+        setLiveSchedule(SCHEDULE);
       } finally {
         setIsLoading(false);
       }
     };
+    
     fetchSchedule();
   }, []);
 
-  // Filter against our LIVE data instead of SCHEDULE
+  // Filter against our LIVE data (which will hold the dummy data if fallback triggered)
   const filteredSchedule = liveSchedule.filter((item) => {
     const dayMatch = selectedDay === "All" || item.day === selectedDay;
     const typeMatch = selectedType === "All" || item.type === selectedType;

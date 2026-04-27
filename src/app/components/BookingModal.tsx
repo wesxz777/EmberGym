@@ -25,6 +25,7 @@ import {
   PLAN_WEEKLY_LIMITS,
   canPlanAccessClass,
   ScheduleItem,
+  SCHEDULE, // 🔥 NEW: Importing your local dummy schedules
 } from "../data/gymDatabase";
 import api from "../../config/api";
 
@@ -67,8 +68,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const [step, setStep] = useState<"pick" | "confirm" | "success" | "cancel">("pick");
 
   const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
-  
-  // 🔥 NEW: Added loading state to track the API call
   const [isLoading, setIsLoading] = useState(true);
 
   /* Reset on open */
@@ -92,31 +91,44 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
 
   useEffect(() => {
     if (isOpen && classData) {
-      setIsLoading(true); // 🔥 Start loading when modal opens
+      setIsLoading(true); 
       api.get('/api/public/schedule')
         .then(res => {
           const slotsForThisClass = res.data.filter((c: any) => 
             c.template?.name === classData.name || c.name === classData.name
           );
           
-          const formattedSlots = slotsForThisClass.map((c: any) => {
-            const dateObj = new Date(c.class_date);
-            return {
-              id: c.id, 
-              className: classData.name,
-              type: classData.type,
-              instructor: c.trainer ? `${c.trainer.first_name} ${c.trainer.last_name}` : "TBA",
-              time: c.start_time.substring(0, 5),
-              day: dateObj.toLocaleDateString("en-US", { weekday: "long" }),
-              duration: classData.duration,
-              room: c.room,
-              spotsLeft: c.max_capacity - (c.bookings_count || 0)
-            };
-          });
-          setLiveSlots(formattedSlots);
+          // 🔥 HYBRID LOGIC: Check if the live API has data
+          if (slotsForThisClass.length > 0) {
+            const formattedSlots = slotsForThisClass.map((c: any) => {
+              const dateObj = new Date(c.class_date);
+              return {
+                id: c.id, 
+                className: classData.name,
+                type: classData.type,
+                instructor: c.trainer ? `${c.trainer.first_name} ${c.trainer.last_name}` : "TBA",
+                time: c.start_time.substring(0, 5),
+                day: dateObj.toLocaleDateString("en-US", { weekday: "long" }),
+                duration: classData.duration,
+                room: c.room,
+                spotsLeft: c.max_capacity - (c.bookings_count || 0)
+              };
+            });
+            setLiveSlots(formattedSlots);
+          } else {
+            // 🔥 FALLBACK: Live database is empty, use dummy data from gymDatabase.tsx
+            console.log("Live DB empty. Falling back to local schedule data.");
+            const localFallbackSlots = SCHEDULE.filter(s => s.className === classData.name);
+            setLiveSlots(localFallbackSlots);
+          }
         })
-        .catch(err => console.error("Failed to fetch slots", err))
-        .finally(() => setIsLoading(false)); // 🔥 Stop loading whether it succeeds or fails
+        .catch(err => {
+          // 🔥 FALLBACK: API crashed/Render is asleep, use dummy data
+          console.error("Failed to fetch live slots. Falling back to local data.", err);
+          const localFallbackSlots = SCHEDULE.filter(s => s.className === classData.name);
+          setLiveSlots(localFallbackSlots);
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [isOpen, classData]);
 
@@ -342,7 +354,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       <div className="mb-4">
                         <p className="text-xs font-medium text-gray-400 mb-2">Select a time slot</p>
                         <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                          {/* 🔥 UPDATED: Conditional UI based on isLoading and array length */}
                           {isLoading ? (
                             <p className="text-sm text-gray-500 text-center py-4">Loading slots...</p>
                           ) : availableSlots.length === 0 ? (

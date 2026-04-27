@@ -180,3 +180,28 @@ Route::get('/debug/seed-schedules', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+
+Route::get('/debug/xray', function () {
+    $status = "Running checks...";
+    
+    // 1. Proactively try to fix the missing column!
+    try {
+        \Illuminate\Support\Facades\Schema::table('contact_bookings', function ($table) {
+            if (!\Illuminate\Support\Facades\Schema::hasColumn('contact_bookings', 'user_id')) {
+                $table->unsignedBigInteger('user_id')->nullable();
+            }
+        });
+        $status = "SUCCESS: The user_id column has been added to contact_bookings!";
+    } catch (\Exception $e) {
+        $status = "DB Check Failed (See logs below)";
+    }
+
+    // 2. Fetch the last 40 lines of the Laravel crash log
+    $logFile = storage_path('logs/laravel.log');
+    $logs = file_exists($logFile) ? array_slice(file($logFile), -40) : ['No crash logs found yet.'];
+
+    return response()->json([
+        'status' => $status,
+        'crash_logs' => $logs
+    ]);
+});

@@ -1,249 +1,107 @@
 <?php
-use App\Http\Controllers\Api\NotificationController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
-// Auth & public
+// --- Controllers ---
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactBookingController;
+use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\PublicController;
+use App\Http\Controllers\Api\NotificationController;
 
-// Admin
+// Admin Controllers
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminMemberController;
-use App\Http\Controllers\Api\Admin\AdminTrainerController;
 use App\Http\Controllers\Api\Admin\AdminStaffController;
 use App\Http\Controllers\Api\Admin\AdminBookingController;
 use App\Http\Controllers\Api\Admin\AdminSettingController;
 use App\Http\Controllers\Api\Admin\AdminLogController;
-use App\Http\Controllers\Api\PublicController;
 
-// ─── Public routes (Guests can access these) ──────────────────────────────────
+/* -------------------------------------------------------------------------- */
+/* 1. PUBLIC ROUTES (No Login Required)                                       */
+/* -------------------------------------------------------------------------- */
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login',    [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
 Route::get('/check-email', [AuthController::class, 'checkEmail']);
 Route::get('/check-phone', [AuthController::class, 'checkPhone']);
 Route::post('/chatbot', [ChatbotController::class, 'chat']);
-// --- PUBLIC ROUTES ---
-Route::post('/contact', [\App\Http\Controllers\Api\ContactMessageController::class, 'store']);
+Route::post('/contact', [ContactMessageController::class, 'store']);
+Route::post('/contact-bookings', [ContactBookingController::class, 'store']);
+Route::get('/public/gym-info', [PublicController::class, 'getGymData']);
+Route::get('/public/schedule', [PublicController::class, 'getSchedule']); // Moved here for clarity
 
-// The Public Booking Route!
-Route::post('/contact-bookings', [ContactBookingController::class, 'store']); 
-
-// ─── Authenticated user (Must be logged in) ───────────────────────────────────
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-// Consolidated Secure Routes
+/* -------------------------------------------------------------------------- */
+/* 2. AUTHENTICATED USER ROUTES (Requires Login)                              */
+/* -------------------------------------------------------------------------- */
 Route::middleware('auth:sanctum')->group(function () {
-    // User Profile
-    Route::put('/user/update', [\App\Http\Controllers\Api\UserController::class, 'update']);
-    Route::put('/user/password', [\App\Http\Controllers\Api\UserController::class, 'updatePassword']);
+    // Current User
+    Route::get('/user', fn(Request $request) => $request->user());
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::put('/user/update', [UserController::class, 'update']);
+    Route::put('/user/password', [UserController::class, 'updatePassword']);
 
-    // Bookings (Users can view their own and delete them, but creating is public above)
+    // User Bookings & Notifications
     Route::delete('/contact-bookings/{id}', [ContactBookingController::class, 'destroy']);
     Route::get('/my-bookings', [ContactBookingController::class, 'myBookings']);
-    
-    // Notifications
     Route::get('/notifications', [NotificationController::class, 'index']);
-    
-    //logout
-    Route::post('/logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
-    
+
+    // Payments
+    Route::prefix('payments')->group(function () {
+        Route::post('checkout', [PaymentController::class, 'checkout']);
+        Route::post('cancel', [PaymentController::class, 'cancelPlan']);
+        Route::get('status/{id}', [PaymentController::class, 'getPaymentStatus']);
+        Route::get('history', [PaymentController::class, 'getPaymentHistory']);
+        Route::get('{id}/receipt', [PaymentController::class, 'downloadReceipt']);
+    });
 });
 
-// Secure Payment Routes
-Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
-    Route::post('checkout', [PaymentController::class, 'checkout']);
-    Route::post('cancel', [PaymentController::class, 'cancelPlan']);
-    Route::get('status/{id}', [PaymentController::class, 'getPaymentStatus']);
-    Route::get('history', [PaymentController::class, 'getPaymentHistory']);
-    Route::get('{id}/receipt', [PaymentController::class, 'downloadReceipt']);
-});
-
-// ─── Admin routes ─────────────────────────────────────────────────────────────
+/* -------------------------------------------------------------------------- */
+/* 3. ADMIN ROUTES (Requires Login + Admin Role)                              */
+/* -------------------------------------------------------------------------- */
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
-    //admin concern
-        Route::get('concerns', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'index']);
-        Route::patch('concerns/{id}/status', [\App\Http\Controllers\Api\Admin\ContactMessageController::class, 'updateStatus']);
-   //admin staff
-    Route::post('staff', [AdminStaffController::class, 'store']);
-    Route::put('staff/{id}', [AdminStaffController::class, 'update']);
-    Route::delete('staff/{id}', [AdminStaffController::class, 'destroy']);
-    Route::get('staff', [AdminStaffController::class, 'index']);
     
-    //admin bookings
-    Route::get('bookings', [AdminBookingController::class, 'index']);
+    Route::get('dashboard', [AdminDashboardController::class, 'index']);
+    
+    // Members
+    Route::apiResource('members', AdminMemberController::class)->except(['store']);
+    
+    // Staff
+    Route::apiResource('staff', AdminStaffController::class);
+    
+    // Bookings
+    Route::apiResource('bookings', AdminBookingController::class)->except(['store']);
     Route::get('bookings/analytics/{id}', [AdminBookingController::class, 'getTemplateAnalytics']);
     
-    //admin members
-    Route::get('members', [AdminMemberController::class, 'index']);
-    
-    //admin dashboard
-    Route::get('dashboard', [AdminDashboardController::class, 'index']);
-
-    Route::apiResource('members',  AdminMemberController::class)->except(['store']);
-    
-    Route::get('staff', [AdminStaffController::class, 'index']);
-    Route::post('staff', [AdminStaffController::class, 'store']);
-    Route::delete('staff/{id}', [AdminStaffController::class, 'destroy']);
-    Route::put('staff/{id}', [AdminStaffController::class, 'update']);
-    
-    Route::apiResource('bookings', AdminBookingController::class)->except(['store']);
-
-    Route::get('settings',          [AdminSettingController::class, 'index']);
-    Route::put('settings/{key}',    [AdminSettingController::class, 'update']);
-
+    // Settings & Logs
+    Route::get('settings', [AdminSettingController::class, 'index']);
+    Route::put('settings/{key}', [AdminSettingController::class, 'update']);
+    Route::put('settings/plans/{id}', [AdminSettingController::class, 'updatePlan']);
     Route::get('logs', [AdminLogController::class, 'index']);
 
-    // --- BOOKING HUB ROUTES ---
-    // This MUST be above the apiResource, otherwise Laravel gets confused!
-    Route::get('bookings/analytics/{id}', [App\Http\Controllers\Api\Admin\AdminBookingController::class, 'getTemplateAnalytics']);
-    Route::apiResource('bookings', App\Http\Controllers\Api\Admin\AdminBookingController::class);
-
-    
-       // 🔥 MAKE SURE THIS EXACT LINE IS HERE:
-    Route::put('settings/plans/{id}', [AdminSettingController::class, 'updatePlan']);
-
-    // --- CONTACT MESSAGES ---
-    Route::get('concerns', [\App\Http\Controllers\Api\ContactMessageController::class, 'index']);
-    Route::patch('concerns/{id}/resolve', [\App\Http\Controllers\Api\ContactMessageController::class, 'markResolved']);
-
+    // Concerns (Contact Messages)
+    Route::get('concerns', [ContactMessageController::class, 'index']);
+    Route::patch('concerns/{id}/resolve', [ContactMessageController::class, 'markResolved']);
 });
 
-    
- 
-
-    Route::get('/public/gym-info', [PublicController::class, 'getGymData']);
-
-    
+/* -------------------------------------------------------------------------- */
+/* 4. MAINTENANCE (Run once after pushing to Postgres)                        */
+/* -------------------------------------------------------------------------- */
 Route::get('/force-migrate', function () {
     try {
         Artisan::call('migrate', ['--force' => true]);
-        return response()->json(['message' => 'Database updated successfully!']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()]);
-    }
-});
-
-Route::get('/magic-clear', function () {
-    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
-    return response()->json(['message' => 'Render cache completely destroyed!']);
-});
-
-Route::get('/god-mode', function () {
-    // 1. Find your specific account
-    $user = \App\Models\User::where('email', 'wesleycaya39@embergym.com')->first();
-    
-    if ($user) {
-        // 2. Grant Super Admin powers
-        $user->role = 'super_admin';
-        $user->save();
-        return response()->json(['message' => 'God Mode activated for ' . $user->email . '!']);
-    }
-    
-    return response()->json(['error' => 'User not found! Check the email address.'], 404);
-});
-
-Route::get('/seed-classes', function () {
-    try {
-        // This command tells Laravel to run your specific seeder
-        \Illuminate\Support\Facades\Artisan::call('db:seed', [
-            '--class' => 'ClassTemplateSeeder',
-            '--force' => true // Required to run in production
-        ]);
-        
-        return response()->json(['message' => 'Gym classes successfully seeded!']);
+        return response()->json(['message' => 'Database tables migrated successfully!']);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 });
 
-Route::get('/debug/classes', function () {
-    return \App\Models\GymClass::with('template')->get();
-});
-
-Route::get('/debug/seed-classes', function () {
-    try {
-        // 🔥 ADDED '--force' => true to bypass the production warning!
-        \Illuminate\Support\Facades\Artisan::call('db:seed', [
-            '--class' => 'FixedGymSeeder',
-            '--force' => true 
-        ]);
-        
-        return response()->json([
-            'status' => 'SUCCESS! Classes are now on the whiteboard.',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'CRASHED!',
-            'error' => $e->getMessage()
-        ]);
-    }
-});
-
-Route::get('/debug/fix-roles', function () {
-    try {
-        // This tells the Postgres database to stop being so strict about the 'role' column
-        \Illuminate\Support\Facades\DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
-        
-        return response()->json([
-            'status' => 'SUCCESS! The strict role constraint has been removed. You can now add Staff!'
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'CRASHED!',
-            'error' => $e->getMessage()
-        ]);
-    }
-});
-
-Route::get('/public/schedule', function () {
-    return \App\Models\GymClass::with(['template', 'trainer'])
-        ->withCount('bookings')
-        ->orderBy('class_date')
-        ->orderBy('start_time')
-        ->get();
-});
-
-Route::get('/debug/recent-bookings', function () {
-    return \App\Models\ContactBooking::orderBy('created_at', 'desc')->take(3)->get();
-});
-
-Route::get('/debug/create-admin', function () {
-    try {
-        $user = \App\Models\User::updateOrCreate(
-            ['email' => 'w.caya@embergym.com'], // Find the user by this email
-            [
-                'first_name' => 'Wesley',
-                'last_name' => 'Caya',
-                'password' => \Illuminate\Support\Facades\Hash::make('akongapalsiWesley@1'),
-                'role' => 'admin', // 🔥 Forces the exact role string your frontend needs
-                'phone' => '0000000000' // Add a dummy phone if your DB requires it
-            ]
-        );
-
-        return response()->json([
-            'status' => 'SUCCESS! Super Admin is ready.',
-            'email' => $user->email,
-            'role' => $user->role
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'CRASHED!',
-            'error' => $e->getMessage()
-        ]);
-    }
-});
-
-Route::get('/debug/clear-cache', function() {
-    \Illuminate\Support\Facades\Artisan::call('route:clear');
-    \Illuminate\Support\Facades\Artisan::call('cache:clear');
-    \Illuminate\Support\Facades\Artisan::call('config:clear');
-    return response()->json(['message' => 'All caches cleared! Laravel is awake.']);
+// Only use this once to setup your tables
+Route::get('/debug/migrate', function() {
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return response()->json(['message' => 'Migrations ran successfully!']);
 });

@@ -13,8 +13,9 @@ class FixedGymSeeder extends Seeder
     public function run(): void
     {
         // 1. Create a default trainer if none exists
+        GymClass::query()->delete();
         $trainer = User::firstOrCreate(
-            ['email' => 'trainer@embergym.com'],
+                ['email' => 'trainer@embergym.com'],
             [
                 'first_name' => 'Lead',
                 'last_name' => 'Trainer',

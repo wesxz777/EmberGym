@@ -25,8 +25,11 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         // 🔥 This tells Laravel to only build your Gym Classes
+    
+        // 🔥 Point this to your real schedule seeder!
         $this->call([
-            ClassTemplateSeeder::class, // (Change this name if your file is named something else, like FixedGymSeeder::class)
+            FixedGymSeeder::class, 
         ]);
+    
     }
 }

@@ -105,3 +105,10 @@ Route::get('/debug/migrate', function() {
     \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
     return response()->json(['message' => 'Migrations ran successfully!']);
 });
+
+Route::get('/debug/peek-users', function () {
+    return response()->json([
+        'total_users' => \App\Models\User::count(),
+        'all_user_data' => \App\Models\User::all(['id', 'email', 'role', 'membership_plan'])
+    ]);
+});

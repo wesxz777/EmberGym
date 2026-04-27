@@ -13,6 +13,19 @@ class AdminMemberController extends Controller
     {
         $search = $request->input('search');
 
+        // 🔥 TEMPORARY DEBUG: Fetch ALL users instead of just 'member'
+        // This will prove if the data exists or if the role filter is the problem
+        $query = User::query(); 
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $members = $query->latest()->paginate(10);
         // Base Query: Fetch users based on the 'member' role
         $query = User::where('role', 'member');
 

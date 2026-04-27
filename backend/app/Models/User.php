@@ -25,6 +25,8 @@ class User extends Authenticatable
         'membership_expires_at',
         'membership_status',
         'membership',
+    'membership',     // 🔥 MUST ADD
+    'has_purchased_before'
     ];
 
     protected $hidden = [

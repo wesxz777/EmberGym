@@ -167,3 +167,16 @@ Route::get('/debug/seed-catalogue', function () {
         ]);
     }
 });
+
+Route::get('/debug/seed-schedules', function () {
+    try {
+        // Run the main DatabaseSeeder (which should run your Class schedules seeder)
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        
+        return response()->json([
+            'status' => 'SUCCESS! The entire database has been seeded with test classes.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});

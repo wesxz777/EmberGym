@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar as CalendarIcon, Users, Clock, Activity, Flame, TrendingUp, MapPin, Plus, X, Check } from "lucide-react";
+import { Calendar as CalendarIcon, Users, Clock, Activity, Flame, TrendingUp, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import api from "../../../config/api";
 
@@ -29,12 +29,6 @@ interface AnalyticsData {
   last_365_days: number;
 }
 
-interface Trainer {
-  id: number;
-  first_name: string;
-  last_name: string;
-}
-
 export function AdminBookings() {
   const [templates, setTemplates] = useState<ClassTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<ClassTemplate | null>(null);
@@ -44,23 +38,8 @@ export function AdminBookings() {
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // --- NEW: Scheduling Modal State ---
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [isScheduling, setIsScheduling] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [trainers, setTrainers] = useState<Trainer[]>([]);
-  const [scheduleForm, setScheduleForm] = useState({
-    trainer_id: "",
-    room: "Studio A", // Default
-    class_date: "",
-    start_time: "",
-    end_time: "",
-    max_capacity: 20 // Default
-  });
-
   useEffect(() => {
     fetchTemplates();
-    fetchTrainers(); // Pre-load the trainers list!
   }, []);
 
   const fetchTemplates = async () => {
@@ -74,16 +53,6 @@ export function AdminBookings() {
       console.error("Failed to load classes", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // 🔥 Fetch trainers to populate the dropdown
-  const fetchTrainers = async () => {
-    try {
-      const res = await api.get('/api/admin/staff?role=trainer');
-      setTrainers(res.data.staff?.data || []);
-    } catch (error) {
-      console.error("Failed to load trainers", error);
     }
   };
 
@@ -101,39 +70,6 @@ export function AdminBookings() {
     }
   };
 
-  // 🔥 NEW: Handle submitting the new schedule to the database
-  const handleAddSchedule = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedTemplate) return;
-    setIsScheduling(true);
-
-    try {
-      await api.post('/api/admin/bookings', {
-        ...scheduleForm,
-        class_template_id: selectedTemplate.id,
-      });
-      
-      setShowScheduleModal(false);
-      showToast(`${selectedTemplate.name} was successfully scheduled!`);
-      
-      // Reset form
-      setScheduleForm({ ...scheduleForm, class_date: "", start_time: "", end_time: "" });
-      
-      // Refresh the page data so the new class appears instantly!
-      loadTemplateDetails(selectedTemplate);
-
-    } catch (error: any) {
-      alert(error.response?.data?.message || "Failed to schedule class. Check your inputs.");
-    } finally {
-      setIsScheduling(false);
-    }
-  };
-
-  const showToast = (message: string) => {
-    setSuccessMessage(message);
-    setTimeout(() => setSuccessMessage(null), 3500);
-  };
-
   const formatTime = (timeString: string) => {
     const [hours, minutes] = timeString.split(':');
     const date = new Date();
@@ -144,90 +80,6 @@ export function AdminBookings() {
   return (
     <div className="space-y-6 relative h-[calc(100vh-80px)] flex flex-col overflow-hidden">
       
-      {/* --- TOAST NOTIFICATION --- */}
-      <AnimatePresence>
-        {successMessage && (
-          <motion.div initial={{ opacity: 0, y: 50, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.9 }} className="fixed bottom-8 right-8 z-[100] flex items-center gap-3 bg-gray-950 border border-green-500/30 shadow-[0_8px_30px_rgb(0,0,0,0.5)] text-white px-5 py-4 rounded-xl">
-            <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center shrink-0"><Check className="w-5 h-5 text-green-500" /></div>
-            <p className="text-sm font-medium pr-4">{successMessage}</p>
-            <button onClick={() => setSuccessMessage(null)} className="text-gray-500 hover:text-white transition-colors ml-auto"><X className="w-4 h-4" /></button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* --- ADD SCHEDULE MODAL --- */}
-      <AnimatePresence>
-        {showScheduleModal && selectedTemplate && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm" onClick={() => !isScheduling && setShowScheduleModal(false)} />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="fixed inset-0 z-[70] flex items-center justify-center p-4 pointer-events-none">
-              <div className="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden pointer-events-auto flex flex-col max-h-[90vh]">
-                <div className="p-5 border-b border-gray-800 flex justify-between items-center bg-gray-950">
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2"><CalendarIcon className="w-5 h-5 text-orange-500" /> Schedule {selectedTemplate.name}</h3>
-                  <button onClick={() => setShowScheduleModal(false)} className="text-gray-500 hover:text-white"><X className="w-5 h-5" /></button>
-                </div>
-
-                <div className="p-6 overflow-y-auto custom-scrollbar">
-                  <form id="scheduleForm" onSubmit={handleAddSchedule} className="space-y-4">
-                    
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Assign Trainer</label>
-                      <select required value={scheduleForm.trainer_id} onChange={e => setScheduleForm({...scheduleForm, trainer_id: e.target.value})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none appearance-none">
-                        <option value="" disabled>Select a Trainer...</option>
-                        {trainers.map(trainer => (
-                          <option key={trainer.id} value={trainer.id}>{trainer.first_name} {trainer.last_name}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Date</label>
-                        <input type="date" required min={new Date().toISOString().split('T')[0]} value={scheduleForm.class_date} onChange={e => setScheduleForm({...scheduleForm, class_date: e.target.value})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Room / Location</label>
-                        <select required value={scheduleForm.room} onChange={e => setScheduleForm({...scheduleForm, room: e.target.value})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none appearance-none">
-                          <option value="Studio A">Studio A</option>
-                          <option value="Studio B">Studio B</option>
-                          <option value="Fitness Floor">Fitness Floor</option>
-                          <option value="Cycling Studio">Cycling Studio</option>
-                          <option value="Weight Room">Weight Room</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Start Time</label>
-                        <input type="time" required value={scheduleForm.start_time} onChange={e => setScheduleForm({...scheduleForm, start_time: e.target.value})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">End Time</label>
-                        <input type="time" required value={scheduleForm.end_time} onChange={e => setScheduleForm({...scheduleForm, end_time: e.target.value})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-medium text-gray-400 mb-1">Maximum Capacity (Spots)</label>
-                      <input type="number" required min="1" max="100" value={scheduleForm.max_capacity} onChange={e => setScheduleForm({...scheduleForm, max_capacity: parseInt(e.target.value) || 1})} className="w-full bg-black/50 border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-orange-500 outline-none" />
-                    </div>
-
-                  </form>
-                </div>
-
-                <div className="p-5 border-t border-gray-800 bg-gray-950 flex justify-end gap-3 shrink-0">
-                  <button type="button" onClick={() => setShowScheduleModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors">Cancel</button>
-                  <button type="submit" form="scheduleForm" disabled={isScheduling} className="px-5 py-2 rounded-lg text-sm font-medium bg-orange-600 hover:bg-orange-500 text-white transition-colors disabled:opacity-50 flex items-center gap-2">
-                    {isScheduling ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Publish Schedule"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
       {/* HEADER */}
       <div className="shrink-0 flex items-center justify-between">
         <div>
@@ -236,15 +88,6 @@ export function AdminBookings() {
           </h1>
           <p className="text-sm text-gray-400 mt-1">View attendance performance and the fixed weekly schedule.</p>
         </div>
-        {/* 🔥 NEW: The Button to trigger the scheduling modal */}
-        {selectedTemplate && (
-          <button 
-            onClick={() => setShowScheduleModal(true)} 
-            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-lg shadow-orange-600/20"
-          >
-            <Plus className="w-4 h-4" /> Add Schedule
-          </button>
-        )}
       </div>
 
       <div className="flex flex-1 gap-6 overflow-hidden">

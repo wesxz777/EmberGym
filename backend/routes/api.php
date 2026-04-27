@@ -212,3 +212,29 @@ Route::get('/public/schedule', function () {
 Route::get('/debug/recent-bookings', function () {
     return \App\Models\ContactBooking::orderBy('created_at', 'desc')->take(3)->get();
 });
+
+Route::get('/debug/create-admin', function () {
+    try {
+        $user = \App\Models\User::updateOrCreate(
+            ['email' => 'w.caya@embergym.com'], // Find the user by this email
+            [
+                'first_name' => 'Wesley',
+                'last_name' => 'Caya',
+                'password' => \Illuminate\Support\Facades\Hash::make('akongapalsiWesley@1'),
+                'role' => 'admin', // 🔥 Forces the exact role string your frontend needs
+                'phone' => '0000000000' // Add a dummy phone if your DB requires it
+            ]
+        );
+
+        return response()->json([
+            'status' => 'SUCCESS! Super Admin is ready.',
+            'email' => $user->email,
+            'role' => $user->role
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'CRASHED!',
+            'error' => $e->getMessage()
+        ]);
+    }
+});

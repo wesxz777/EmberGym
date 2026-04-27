@@ -114,6 +114,12 @@ class PaymentController
             // Update user membership
             if ($paymentStatus === 'success') {
                 $user->update([
+                    // 🔥 ADDED: The Missing Link to promote the user for the Admin Panel!
+                    'role' => 'member', 
+                    'membership' => ucfirst($request->plan), 
+                    'has_purchased_before' => true, 
+                    
+                    // Original fields
                     'membership_plan' => $request->plan,
                     'membership_status' => 'active',
                     // 🔥 UPDATED: Locked to exactly 30 days!

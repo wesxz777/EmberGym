@@ -55,7 +55,6 @@ export function PaymentCheckout() {
   const hasActiveMembership = !!user?.membership && user.membership.toLowerCase() !== "none";
 
   // ONE-TIME DISCOUNT ENFORCEMENT
-  // Added (user as any) to bypass TypeScript strict checking
   const isFirstTimeBuyer = !(user as any)?.has_purchased_before; 
 
   const [formData, setFormData] = useState<FormData>({
@@ -141,8 +140,13 @@ export function PaymentCheckout() {
 
       if (response.data.success) {
         const formattedPlan = plan.charAt(0).toUpperCase() + plan.slice(1) as "Basic" | "Pro" | "Elite";
-        // Added "as any" to bypass TypeScript checking for the new field
-        updateUser({ membership: formattedPlan, has_purchased_before: true } as any);
+        
+        // 🔥 FRONTEND FIX: Immediately tell React this user is now a "member"
+        updateUser({ 
+            membership: formattedPlan, 
+            has_purchased_before: true,
+            role: "member" 
+        } as any);
 
         navigate(`/payment-confirmation?transaction_id=${response.data.transaction_id}&payment_id=${response.data.payment_id}`);
       } else {
@@ -155,8 +159,13 @@ export function PaymentCheckout() {
 
       if (errorMsg.includes("PaymentSuccessful") || errorMsg.includes("not found")) {
         const formattedPlan = plan.charAt(0).toUpperCase() + plan.slice(1) as "Basic" | "Pro" | "Elite";
-        // Added "as any" to bypass TypeScript checking for the new field
-        updateUser({ membership: formattedPlan, has_purchased_before: true } as any);
+        
+        // 🔥 FRONTEND FIX: Immediately tell React this user is now a "member" (Fallback block)
+        updateUser({ 
+            membership: formattedPlan, 
+            has_purchased_before: true,
+            role: "member"
+        } as any);
         
         navigate(`/payment-confirmation?transaction_id=TXN-${Date.now()}&payment_id=PENDING`);
       } else {

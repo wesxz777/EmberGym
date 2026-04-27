@@ -134,3 +134,17 @@ Route::get('/debug/fix-columns', function () {
         return response()->json(['error' => $e->getMessage()], 500);
     }
 });
+
+
+Route::get('/debug/nuke-role-constraint', function () {
+    try {
+        // This command tells PostgreSQL to destroy the gatekeeper blocking the 'member' role
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check');
+        
+        return response()->json([
+            'status' => 'SUCCESS! The role gatekeeper has been destroyed. You can now save members!'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to drop constraint: ' . $e->getMessage()]);
+    }
+});

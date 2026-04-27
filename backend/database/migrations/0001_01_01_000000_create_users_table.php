@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('password');
             
             // 🔥 ALL CUSTOM COLUMNS CONSOLIDATED HERE:
-            $table->enum('role', ['super_admin', 'admin', 'trainer', 'receptionist', 'staff', 'user'])->default('user');
+$table->string('role')->default('user');
             $table->string('membership_plan')->default('none');
             $table->string('membership_status')->default('inactive');
             $table->timestamp('membership_expires_at')->nullable();
@@ -30,9 +30,6 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
-
-        // Keep the password_reset_tokens and sessions tables down here!
-        // ...
     
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();

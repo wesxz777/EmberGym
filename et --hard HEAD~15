@@ -1,0 +1,158 @@
+[33ma891eb6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix NotificationBell filter bug for production
+[33m87ce354[m Fix NotificationBell filter bug for production
+[33m72ecb18[m Fix NotificationBell filter bug for production
+[33m9ae2996[m Fix NotificationBell filter bug for production
+[33m4083dc8[m Fix NotificationBell filter bug for production
+[33m3538449[m Fix NotificationBell filter bug for production
+[33mbb14357[m Fix NotificationBell filter bug for production
+[33mada3869[m Fix NotificationBell filter bug for production
+[33m4a2be37[m Fix NotificationBell filter bug for production
+[33ma556ead[m Fix NotificationBell filter bug for production
+[33mf13b7fb[m Fix NotificationBell filter bug for production
+[33m9d48e55[m Fix NotificationBell filter bug for production
+[33ma6fc906[m Fix NotificationBell filter bug for production
+[33ma3351ad[m Fix NotificationBell filter bug for production
+[33m23447fe[m Fix NotificationBell filter bug for production
+[33mc29ce57[m Fix NotificationBell filter bug for production
+[33m05b2502[m Fix NotificationBell filter bug for production
+[33m0d81124[m Fix NotificationBell filter bug for production
+[33m6270883[m Fix NotificationBell filter bug for production
+[33ma519a2e[m Fix NotificationBell filter bug for production
+[33mde9d23f[m Fix NotificationBell filter bug for production
+[33m120103b[m Fix NotificationBell filter bug for production
+[33ma2b067c[m Fix NotificationBell filter bug for production
+[33mad88f36[m Fix NotificationBell filter bug for production
+[33m86d0068[m Fix NotificationBell filter bug for production
+[33m21af7b9[m Fix NotificationBell filter bug for production
+[33ma5e76d6[m Fix NotificationBell filter bug for production
+[33m437a982[m Fix NotificationBell filter bug for production
+[33maa9b485[m Fix NotificationBell filter bug for production
+[33m2a828df[m Fix NotificationBell filter bug for production
+[33mbcabe97[m Remove all contact_booking dependencies from user deletion
+[33m7785d76[m Fix NotificationBell filter bug for production
+[33me70c2c3[m Fix undefined column error when deleting members
+[33mf06609c[m Fix NotificationBell filter bug for production
+[33ma9acc15[m Fix regex delimiter for phone validation
+[33m34eda0d[m Fix NotificationBell filter bug for production
+[33m9618e07[m Update Laravel phone validation to accept +63 format
+[33md592f17[m Update Laravel phone validation to accept +63 format
+[33m31386ee[m Fix NotificationBell filter bug for production
+[33m8407d6f[m Fix NotificationBell filter bug for production
+[33m6fd9509[m Fix POST route for staff enrollment
+[33m2061f29[m Fix NotificationBell filter bug for production
+[33mbb8ddae[m Hardcode the full API URL for concerns to bypass Vercel cache
+[33mc72c1a0[m Fix NotificationBell filter bug for production
+[33m8d7de1e[m Fix NotificationBell filter bug for production
+[33m2c80582[m Fix NotificationBell filter bug for production
+[33m8f7405d[m Fix NotificationBell filter bug for production
+[33md9c669a[m Fix NotificationBell filter bug for production
+[33me8adf61[m Add ClassTemplate seeder and execution route
+[33m121f663[m Add ClassTemplate seeder and execution route
+[33med75b8a[m Fix NotificationBell filter bug for production
+[33m56f0225[m Fix NotificationBell filter bug for production
+[33m1233ed4[m Fix NotificationBell filter bug for production
+[33m8fc3d0a[m Fix NotificationBell filter bug for production
+[33m7ea212e[m Fix NotificationBell filter bug for production
+[33m918a013[m Fix NotificationBell filter bug for production
+[33md271f4a[m Fix NotificationBell filter bug for production
+[33m5f3d14d[m Fix NotificationBell filter bug for production
+[33m540e5c6[m Fix NotificationBell filter bug for production
+[33m97332dc[m Rename controller function to chat
+[33m168c026[m Fix NotificationBell filter bug for production
+[33m2f7b2a0[m Fix NotificationBell filter bug for production
+[33mf2b4e69[m Fix NotificationBell filter bug for production
+[33m638ca12[m Fix NotificationBell filter bug for production
+[33mf32edd9[m Fix NotificationBell filter bug for production
+[33m2b5bae2[m Fix NotificationBell filter bug for production
+[33m8bc972f[m Fix NotificationBell filter bug for production
+[33m461f7d4[m Fix NotificationBell filter bug for production
+[33m87b6b2b[m Fix NotificationBell filter bug for production
+[33m03c8851[m Fix NotificationBell filter bug for production
+[33ma21ecd7[m Fix NotificationBell filter bug for production
+[33maabbecc[m Fix NotificationBell filter bug for production
+[33m47966b9[m Fix NotificationBell filter bug for production
+[33m7ba2da9[m Fix NotificationBell filter bug for production
+[33m2c544f3[m Fix NotificationBell filter bug for production
+[33m9248678[m Fix NotificationBell filter bug for production
+[33m7c98f9c[m Fix NotificationBell filter bug for production
+[33m79c6949[m Fix NotificationBell filter bug for production
+[33mf4a0bff[m Fix NotificationBell filter bug for production
+[33m86b4703[m Fix NotificationBell filter bug for production
+[33m2e28663[m Fix NotificationBell filter bug for production
+[33m2af6e40[m Fix NotificationBell filter bug for production
+[33m07dc8d3[m Fix NotificationBell filter bug for production
+[33m24a6549[m Fix NotificationBell filter bug for production
+[33mab034bc[m Fix broken api import in AdminStaff
+[33m72a7967[m Fix all admin routing imports
+[33m8e6523e[m Fix all admin routing imports
+[33m0e618d6[m Fix all admin routing imports
+[33mcb666ff[m Fix all admin routing imports
+[33m158a38a[m login fix
+[33m15ded3e[m Login trycatch errprs
+[33m7e5a14f[m login change
+[33m4d23a8f[m Refactor auth components to use custom api config
+[33ma42820f[m Apply Cors to inde.xphp
+[33mfef112f[m Api configuration
+[33mb333eae[m Change backdoor to migrate fresh
+[33m409d317[m Add temporary migration route
+[33m22c6d7d[m Add temporary migration route
+[33m53234c0[m Add missing membership columns to users table
+[33ma773543[m Fix CORS to allow Vercel
+[33m7e5586c[m Replace all localhost API calls with live Render URL
+[33m2cdc0de[m Fix the white screen
+[33m777d212[m Fix white screen and routing
+[33m8c9a312[m Add role and membership columns to users table
+[33m5d76cfc[m Fix Postgres migration compatibility
+[33m2fa8acc[m docker
+[33me004c2c[m Finalization
+[33m6ccfefe[m typo error updated schedule page
+[33md2ac4d9[m Updated base for the vite
+[33m6e135a5[m changes for publishing to github
+[33mdde404c[m node version updated
+[33m34cc739[m OVERALL CHANGES
+[33m35598ea[m overall changes
+[33m44f5616[m OVERALL CHANGES
+[33m05538d7[m debugged
+[33m9ac876c[m schedule backend
+[33m73dfc9e[m rechanged the schedule
+[33m2a35a8f[m rechanged the file destination
+[33mbe83954[m debugged gallery and added reception area
+[33mceae063[m added gallery
+[33m21b1045[m commt
+[33m5194c79[m update gallery
+[33m1766b3d[m update gallery
+[33mbd5604b[m update baruela
+[33m48378fb[m gallery  update
+[33ma57ab49[m gallery updates
+[33m59f8b32[m redid
+[33m100be85[m gallery
+[33m8025a38[m gallery
+[33m8a00c6c[m gallery
+[33mce092f5[m gallery added
+[33m7b8ab03[m commit gallery
+[33md1f072c[m fixied image
+[33mfaf6ba5[m added gallery
+[33mf42930c[m debug schedule
+[33md595e04[m debug shcedule
+[33mfd5c11c[m dbeygesd
+[33m64bc196[m commit
+[33m8f7c7ca[m final i guess schedule
+[33mf9367c3[m removed}
+[33m2ef1d49[m debug again
+[33m3474864[m deleted the rest of unneccessary files in schedule.tsx
+[33m2a11451[m remove double functions
+[33m814859e[m updated schedule with the database
+[33ma53757c[m redid all the changes in schedule
+[33mee580a5[m remove schedule componennt
+[33m16d836a[m fixed structure
+[33md280eaa[m debug again
+[33mc21dd47[m  debug schedule again
+[33m9df1d6b[m schedule debug
+[33m8794fe7[m debug again
+[33m53c768e[m debug
+[33mb8e30c8[m Schedule debug
+[33m2bcaff9[m Schedule database connection
+[33md1931b7[m Trainers api changes
+[33m17d0476[m change api
+[33m12d7df0[m change api
+[33m3a8fad6[m Changes Placeholder Si

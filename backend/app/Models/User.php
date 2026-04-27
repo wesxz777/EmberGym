@@ -24,11 +24,10 @@ class User extends Authenticatable
         'membership_plan',
         'membership_expires_at',
         'membership_status',
-        'membership',
-    'membership',     // 🔥 MUST ADD
-    'has_purchased_before'
+        'membership',     // Keep one
+        'has_purchased_before'
     ];
-
+    
     protected $hidden = [
         'password',
         'remember_token',

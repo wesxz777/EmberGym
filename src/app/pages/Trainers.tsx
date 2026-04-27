@@ -26,7 +26,7 @@ export function Trainers() {
       certifications: ["RYT-500", "Mindfulness Coach", "Nutrition Cert"],
       experience: "8 years",
       bio: "Joana brings a holistic approach to fitness, combining traditional yoga practices with modern strength training techniques.",
-      image: "public\\TrainerImg\\HernandezTrainer.png",
+      image: "images/TrainerImg/HernandezTrainer.png",
       clients: 150,
     },
     {
@@ -37,7 +37,7 @@ export function Trainers() {
       certifications: ["NASM-CPT", "CrossFit Level 2", "TRX Certified"],
       experience: "10 years",
       bio: "Estor specializes in high-intensity training programs that deliver real results in minimal time.",
-      image: "public\\TrainerImg\\EstorTrainer.jpg",
+      image: "images/TrainerImg/EstorTrainer.jpg",
       clients: 200,
     },
     {
@@ -48,7 +48,7 @@ export function Trainers() {
       certifications: ["HOPE TEACHER"],
       experience: "12 years",
       bio: "I has coached numerous athletes to championship levels and specializes in building lean muscle mass.",
-      image: "public\\TrainerImg\\IgorTrainer.png",
+      image: "images/TrainerImg/IgorTrainer.png",
       clients: 180,
     },
   

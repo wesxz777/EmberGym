@@ -148,3 +148,22 @@ Route::get('/debug/nuke-role-constraint', function () {
         return response()->json(['error' => 'Failed to drop constraint: ' . $e->getMessage()]);
     }
 });
+
+Route::get('/debug/seed-catalogue', function () {
+    try {
+        // This forces Laravel to run your class templates seeder in production
+        \Illuminate\Support\Facades\Artisan::call('db:seed', [
+            '--class' => 'ClassTemplateSeeder', // Adjust this name if your seeder is named differently (e.g., 'FixedGymSeeder')
+            '--force' => true 
+        ]);
+        
+        return response()->json([
+            'status' => 'SUCCESS! The Class Catalogue has been fully stocked.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'FAILED',
+            'error' => $e->getMessage()
+        ]);
+    }
+});

@@ -117,8 +117,9 @@ class ClassTemplateSeeder extends Seeder
             // A. Create the template (Menu item)
             $template = ClassTemplate::create($classData);
 
-            // B. Schedule a Morning Class
+          // B. Schedule a Morning Class
             GymClass::create([
+                'name' => $template->name, // 🔥 ADD THIS LINE
                 'class_template_id' => $template->id,
                 'trainer_id' => $trainer->id,
                 'room' => 'Studio A',
@@ -130,6 +131,7 @@ class ClassTemplateSeeder extends Seeder
 
             // C. Schedule an Evening Class
             GymClass::create([
+                'name' => $template->name, // 🔥 ADD THIS LINE
                 'class_template_id' => $template->id,
                 'trainer_id' => $trainer->id,
                 'room' => 'Fitness Floor',

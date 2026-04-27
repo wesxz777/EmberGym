@@ -237,3 +237,23 @@ Route::get('/debug/make-super-admin', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+
+Route::get('/debug/check-bookings', function () {
+    // Grab the absolute newest booking from the database
+    $lastBooking = \App\Models\ContactBooking::orderBy('id', 'desc')->first();
+    
+    if (!$lastBooking) {
+        return response()->json(['status' => 'Ghost Town: No bookings exist in the database at all.']);
+    }
+
+    // Try to find the Gym Class that matches the schedule_id saved in the booking
+    $matchingClass = \App\Models\GymClass::find($lastBooking->schedule_id);
+
+    return response()->json([
+        '1_status' => 'Booking found!',
+        '2_latest_booking_data' => $lastBooking,
+        '3_target_schedule_id' => $lastBooking->schedule_id,
+        '4_did_it_match_a_class' => $matchingClass ? 'YES! The bridge is connected.' : 'NO! The ID does not match any class.',
+        '5_class_details' => $matchingClass
+    ]);
+});

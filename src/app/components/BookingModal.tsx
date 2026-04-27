@@ -67,6 +67,9 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const [step, setStep] = useState<"pick" | "confirm" | "success" | "cancel">("pick");
 
   const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
+  
+  // 🔥 NEW: Added loading state to track the API call
+  const [isLoading, setIsLoading] = useState(true);
 
   /* Reset on open */
   useEffect(() => {
@@ -89,6 +92,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
 
   useEffect(() => {
     if (isOpen && classData) {
+      setIsLoading(true); // 🔥 Start loading when modal opens
       api.get('/api/public/schedule')
         .then(res => {
           const slotsForThisClass = res.data.filter((c: any) => 
@@ -111,7 +115,8 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
           });
           setLiveSlots(formattedSlots);
         })
-        .catch(err => console.error("Failed to fetch slots", err));
+        .catch(err => console.error("Failed to fetch slots", err))
+        .finally(() => setIsLoading(false)); // 🔥 Stop loading whether it succeeds or fails
     }
   }, [isOpen, classData]);
 
@@ -337,8 +342,11 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       <div className="mb-4">
                         <p className="text-xs font-medium text-gray-400 mb-2">Select a time slot</p>
                         <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                          {availableSlots.length === 0 ? (
+                          {/* 🔥 UPDATED: Conditional UI based on isLoading and array length */}
+                          {isLoading ? (
                             <p className="text-sm text-gray-500 text-center py-4">Loading slots...</p>
+                          ) : availableSlots.length === 0 ? (
+                            <p className="text-sm text-orange-400 text-center py-4">No classes scheduled right now. Check back later!</p>
                           ) : (
                             availableSlots.map((slot) => {
                               const booked = isBooked(slot.id);

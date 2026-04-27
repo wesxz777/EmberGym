@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\ClassTemplate;
+use App\Models\GymClass;
+use App\Models\User;
 
 class ClassTemplateSeeder extends Seeder
 {
@@ -92,11 +94,50 @@ class ClassTemplateSeeder extends Seeder
             ],
         ];
 
-        // Wipe existing templates to avoid duplicates if running multiple times
-        ClassTemplate::truncate();
+        // 1. Wipe existing data cleanly
+        GymClass::query()->delete();
+        ClassTemplate::query()->delete();
 
-        foreach ($classes as $class) {
-            ClassTemplate::create($class);
+        // 2. We need a trainer to run the classes!
+        // Grab the first existing trainer, or the first user, or create a dummy one safely.
+        $trainer = User::where('role', 'trainer')->first();
+        if (!$trainer) {
+            $trainer = User::first() ?? User::create([
+                'first_name' => 'Coach',
+                'last_name' => 'Carter',
+                'email' => 'coach@embergym.com',
+                'password' => bcrypt('password123'),
+                'role' => 'trainer',
+                'phone' => '1234567890'
+            ]);
+        }
+
+        // 3. Create the Templates AND Schedule them!
+        foreach ($classes as $classData) {
+            // A. Create the template (Menu item)
+            $template = ClassTemplate::create($classData);
+
+            // B. Schedule a Morning Class
+            GymClass::create([
+                'class_template_id' => $template->id,
+                'trainer_id' => $trainer->id,
+                'room' => 'Studio A',
+                'class_date' => now()->addDays(1)->toDateString(), // Tomorrow
+                'start_time' => '08:00:00',
+                'end_time' => '09:00:00',
+                'max_capacity' => 20,
+            ]);
+
+            // C. Schedule an Evening Class
+            GymClass::create([
+                'class_template_id' => $template->id,
+                'trainer_id' => $trainer->id,
+                'room' => 'Fitness Floor',
+                'class_date' => now()->addDays(2)->toDateString(), // The day after tomorrow
+                'start_time' => '18:00:00',
+                'end_time' => '19:00:00',
+                'max_capacity' => 25,
+            ]);
         }
     }
 }

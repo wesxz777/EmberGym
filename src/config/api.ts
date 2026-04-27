@@ -1,15 +1,13 @@
-import axios from "axios";
+// src/config/api.ts
+import axios from 'axios';
 
 const api = axios.create({
-  baseURL: "https://embergym.onrender.com/api", 
-  withCredentials: true, 
-  headers: { 
-    "Accept": "application/json", 
-    "Content-Type": "application/json" 
-  },
+    // 🔥 Make sure this points to Render, NOT http://localhost:8000
+    baseURL: 'https://embergym.onrender.com', 
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    }
 });
-
-api.defaults.xsrfCookieName = "XSRF-TOKEN";
-api.defaults.xsrfHeaderName = "X-XSRF-TOKEN";
 
 export default api;

@@ -18,7 +18,7 @@ class ContactBookingController extends Controller
             'email'         => 'required|email|max:255',
             'phone'         => 'required|string|max:50',
             'class_type'    => 'required|string|max:100',
-            'schedule_id' => 'required|integer',
+            'schedule_id'   => 'required|integer',
             'schedule_day'  => 'required|string|max:20',
             'schedule_time' => 'required|string|max:10',
             'class_name'    => 'required|string|max:255',
@@ -26,12 +26,16 @@ class ContactBookingController extends Controller
             'message'       => 'nullable|string|max:2000',
         ]);
 
-        // Create the booking
-        $booking = ContactBooking::create($validated);
-
-        // Since this is a public route, $request->user() is null. 
-        // We proactively check Sanctum, or fallback to checking if the email belongs to a user.
+        // 🔥 CRITICAL FIX: Find the user FIRST
         $user = auth('sanctum')->user() ?? User::where('email', $validated['email'])->first();
+        
+        // 🔥 CRITICAL FIX: If a user exists, attach their ID to the data BEFORE saving
+        if ($user) {
+            $validated['user_id'] = $user->id;
+        }
+
+        // Create the booking with the user_id included
+        $booking = ContactBooking::create($validated);
         
         // --- TRIGGER NOTIFICATION ---
         if ($user) {

@@ -15,11 +15,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // 🔥 We comment out ALL fake user generation for production!
+        
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+        // 🔥 This tells Laravel to only build your Gym Classes
+        $this->call([
+            ClassTemplateSeeder::class, // (Change this name if your file is named something else, like FixedGymSeeder::class)
         ]);
     }
 }

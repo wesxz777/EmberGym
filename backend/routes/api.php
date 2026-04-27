@@ -205,3 +205,6 @@ Route::get('/debug/xray', function () {
         'crash_logs' => $logs
     ]);
 });
+
+// Make sure this route exists and points to 'getSchedule'
+Route::get('/public/schedule', [App\Http\Controllers\Api\PublicController::class, 'getSchedule']);

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, CheckCircle, CreditCard, Calendar } from 'lucide-react';
+import { Bell, CheckCircle, CreditCard, Calendar, Loader2 } from 'lucide-react'; // 🔥 Added Loader2
 import api from '../../config/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,6 +19,7 @@ interface AppNotification {
 export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [isMarkingRead, setIsMarkingRead] = useState(false); // 🔥 NEW: Loading state tracker
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 🔥 SAFETY SHIELD 1: Prevent crash if notifications is undefined/object
@@ -49,8 +50,6 @@ export function NotificationBell() {
     if (!user) {
       setNotifications([]);
     } else {
-      // Add a tiny half-second delay so Laravel's database can catch up
-      // when generating "Welcome" or "Payment" notifications!
       setTimeout(() => {
         fetchNotifications();
       }, 500);
@@ -59,33 +58,32 @@ export function NotificationBell() {
 
   const fetchNotifications = async () => {
     try {
-      // Configure axios to use your Sanctum configuration
       const response = await api.get('/api/notifications', {
-          withCredentials: true, // Crucial for Sanctum auth
+          withCredentials: true,
       });
-      
-      // 🔥 SAFETY SHIELD 2: Force it to be an empty array if Laravel sends back weird data
       setNotifications(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
-      setNotifications([]); // Fallback to empty array on error
+      setNotifications([]);
     }
   };
 
   const markAllAsRead = async () => {
+    setIsMarkingRead(true); // 🔥 START LOADING ANIMATION
     try {
       await api.post('/api/notifications/mark-read', {}, {
           withCredentials: true,
       });
-      // 🔥 SAFETY SHIELD 3: Only map if it's actually an array
+      // Update UI to show all as read instantly
       setNotifications(prev => Array.isArray(prev) ? prev.map(n => ({ ...n, read_at: new Date().toISOString() })) : []);
     } catch (error) {
       console.error("Failed to mark notifications as read:", error);
+    } finally {
+      setIsMarkingRead(false); // 🔥 STOP LOADING ANIMATION
     }
   };
 
   const getIcon = (type: string) => {
-    // We match against the 'type' value you will set in Laravel
     if (type?.includes('booking')) return <Calendar className="w-4 h-4 text-orange-400" />;
     if (type?.includes('payment')) return <CreditCard className="w-4 h-4 text-green-400" />;
     return <Bell className="w-4 h-4 text-gray-400" />;
@@ -97,7 +95,6 @@ export function NotificationBell() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
-  // 🔥 SAFETY SHIELD 4: Ensure notifications is an array before rendering length
   const safeNotifications = Array.isArray(notifications) ? notifications : [];
 
   return (
@@ -122,9 +119,19 @@ export function NotificationBell() {
             {unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
-                className="text-xs text-orange-500 hover:text-orange-400 transition-colors flex items-center gap-1"
+                disabled={isMarkingRead} // 🔥 DISABLE BUTTON WHILE LOADING
+                className="text-xs text-orange-500 hover:text-orange-400 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <CheckCircle className="w-3 h-3" /> Mark all read
+                {/* 🔥 DYNAMIC ICON AND TEXT */}
+                {isMarkingRead ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" /> Marking...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-3 h-3" /> Mark all read
+                  </>
+                )}
               </button>
             )}
           </div>

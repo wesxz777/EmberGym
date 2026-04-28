@@ -49,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/contact-bookings/{id}', [ContactBookingController::class, 'destroy']);
     Route::get('/my-bookings', [ContactBookingController::class, 'myBookings']);
     Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-read', [NotificationController::class, 'markAllAsRead']);
 
     // Payments
     Route::prefix('payments')->group(function () {

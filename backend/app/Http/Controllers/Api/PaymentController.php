@@ -83,13 +83,19 @@ class PaymentController
                 'pro' => 149900,    // ₱1499.00
                 'elite' => 199900,  // ₱1999.00
             ];
-
             $baseAmount = $planPrices[$request->plan];
-            $discount = (int) ($baseAmount * 0.5); // 50% discount
+            
+            // 🔥 NEW: Check the user's history for the discount!
+            if ($user->has_purchased_before) {
+                $discount = 0; // No discount for returning members
+            } else {
+                $discount = (int) ($baseAmount * 0.5); // 50% discount for first-time buyers only
+            }
+
             $subtotal = $baseAmount - $discount;
             $taxAmount = (int) ($subtotal * 0.12); // 12% VAT
             $totalAmount = $subtotal + $taxAmount;
-
+            
             // TODO: Integrate with payment gateway (Stripe/PayMongo)
             // For now, we'll simulate successful payment
             $transactionId = 'TXN_' . Str::random(16);

@@ -291,3 +291,18 @@ Route::get('/debug/force-capacity', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+
+Route::get('/debug/clear-cache', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+
+        return response()->json([
+            'status' => 'SUCCESS! All Laravel caches have been completely obliterated.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});

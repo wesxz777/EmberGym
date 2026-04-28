@@ -37,9 +37,6 @@ interface Props {
   source: BookingSource | null;
 }
 
-const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
 /* ─── Plan badge helper ────────────────────────────────────────────────────── */
 function PlanBadge({ plan }: { plan: string }) {
   const styles: Record<string, string> = {
@@ -68,7 +65,11 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const { addBooking, removeBooking, isBooked, getBookingBySchedule, weeklyCount, getSpotsLeft } = useBookings();
 
   const [selectedSlot, setSelectedSlot] = useState<ScheduleItem | null>(null);
-  // 🔥 NEW: Added "error" to the step state
+  
+  // 🔥 FIXED: These states are now safely inside the component body!
+  const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
   const [step, setStep] = useState<"pick" | "confirm" | "success" | "cancel" | "error">("pick");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -186,7 +187,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
     } catch (error: any) {
       console.error("Booking failed to save to database:", error);
       
-      // 🔥 NEW: Catch the 403 Membership Error and switch to the error UI
       if (error.response && error.response.status === 403) {
         setErrorMessage(error.response.data.error || "You must have an active membership to book.");
         setStep("error"); 
@@ -244,7 +244,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
 
               <div className="flex items-center justify-between px-6 py-4 border-b border-orange-500/10">
                 <h2 className="font-bold text-white text-lg">
-                  {/* 🔥 UPDATED TITLE LOGIC */}
                   {step === "success" ? "Booking Confirmed!" :
                    step === "cancel"  ? "Booking Cancelled" :
                    step === "error"   ? "Action Required" :
@@ -347,7 +346,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       </motion.div>
                     )}
 
-                    {/* 🔥 THE NEW ERROR STATE MODAL */}
                     {step === "error" && (
                       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-xl p-5 text-center mb-4 bg-red-500/10 border border-red-500/20">
                         <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-red-500/20">

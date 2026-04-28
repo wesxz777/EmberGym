@@ -177,7 +177,6 @@ class PaymentController
         }
 
        try {
-            // --- ADDED: Save the old plan name before overwriting it ---
             $planName = ucfirst($user->membership_plan);
 
             // Cancel the plan
@@ -187,9 +186,11 @@ class PaymentController
                 'membership_expires_at' => null,
             ]);
 
-            // --- ADDED NOTIFICATION LOGIC ---
+            // 🔥 CASCADE CANCELLATION: Wipe all their class bookings!
+            // This instantly frees up the spots for paying members
+            \App\Models\ContactBooking::where('user_id', $user->id)->delete();
+
             $user->notify(new MembershipCancelled($planName));
-            // --------------------------------
 
             return response()->json([
                 'success' => true,

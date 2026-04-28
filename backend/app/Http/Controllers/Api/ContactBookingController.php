@@ -26,21 +26,24 @@ class ContactBookingController extends Controller
             'message'       => 'nullable|string|max:2000',
         ]);
 
-        // 🔥 CRITICAL FIX: Find the user FIRST
         $user = auth('sanctum')->user() ?? User::where('email', $validated['email'])->first();
         
-        // 🔥 CRITICAL FIX: If a user exists, attach their ID to the data BEFORE saving
-        if ($user) {
-            $validated['user_id'] = $user->id;
+        // 🔥 THE GATEKEEPER: Strict Membership Check
+        // Reject if no account exists, or if they exist but have a cancelled/none membership 
+        // (We always let the super_admin bypass this rule!)
+        if (!$user || ($user->membership_status !== 'active' && $user->role !== 'super_admin')) {
+            return response()->json([
+                'message' => 'Active Membership Required',
+                'error' => 'You must have an active membership to book this class.'
+            ], 403);
         }
 
-        // Create the booking with the user_id included
+        // Attach the user ID and save the booking
+        $validated['user_id'] = $user->id;
         $booking = ContactBooking::create($validated);
         
-        // --- TRIGGER NOTIFICATION ---
-        if ($user) {
-            $user->notify(new BookingConfirmed($booking->class_name, $booking->schedule_time));
-        }
+        // Trigger notification
+        $user->notify(new BookingConfirmed($booking->class_name, $booking->schedule_time));
 
         return response()->json(['message' => 'Booking successful']);
     }

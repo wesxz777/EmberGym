@@ -274,3 +274,20 @@ Route::get('/debug/set-capacity-default', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+
+Route::get('/debug/force-capacity', function () {
+    try {
+        // 1. Forcefully update every single class using Laravel's ORM
+        \App\Models\GymClass::query()->update(['max_capacity' => 25]);
+
+        // 2. Fetch the newly updated classes to PROVE they changed
+        $proof = \App\Models\GymClass::select('id', 'name', 'max_capacity')->get();
+
+        return response()->json([
+            'status' => 'SUCCESS! All classes forced to 25.',
+            'proof' => $proof
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});

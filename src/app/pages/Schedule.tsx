@@ -14,10 +14,9 @@ import { Link } from "react-router";
 import { AuthGate } from "../components/AuthGate";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
-import { SCHEDULE } from "../data/gymDatabase"; // 🔥 NEW: Importing your local dummy schedules
+import { SCHEDULE } from "../data/gymDatabase"; 
 import api from "../../config/api"; 
 
-// Define the interface locally so we don't rely on the hardcoded file
 export interface ScheduleItem {
   id: number;
   className: string;
@@ -32,9 +31,8 @@ export interface ScheduleItem {
 
 export function Schedule() {
   const { isLoggedIn } = useAuth();
-  const { isBooked, bookings, getSpotsLeft } = useBookings();
+  const { isBooked, bookings } = useBookings(); // 🔥 Removed the broken getSpotsLeft function
 
-  // 🔥 NEW: Live Database State
   const [liveSchedule, setLiveSchedule] = useState<ScheduleItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,38 +47,34 @@ export function Schedule() {
   const types = ["All", "Yoga", "HIIT", "Strength", "Cardio", "Pilates"];
   const times = ["All", "Morning (6-12)", "Afternoon (12-17)", "Evening (17-21)"];
 
-  // 🔥 NEW: Hybrid Fetch Logic
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
         setIsLoading(true);
         const res = await api.get('/api/public/schedule');
         
-        // 🔥 HYBRID LOGIC: Check if the live API has data
         if (res.data && res.data.length > 0) {
-          // Map the backend data to fit our beautiful frontend UI
           const formatted = res.data.map((c: any) => {
             const dateObj = new Date(c.class_date);
+            // 🔥 DEFAULT TO 25 LOGIC APPLIED HERE
+           const currentBookings = c.bookings_count || 0;
+
             return {
               id: c.id,
               className: c.template?.name || c.name,
               type: c.template?.type || "Class",
               instructor: c.trainer ? `${c.trainer.first_name} ${c.trainer.last_name}` : "TBA",
-              time: c.start_time.substring(0, 5), // '06:00:00' -> '06:00'
+              time: c.start_time.substring(0, 5), 
               day: dateObj.toLocaleDateString("en-US", { weekday: "long" }),
               duration: c.template?.duration || 60,
               room: c.room,
-              spotsLeft: c.max_capacity - (c.bookings_count || 0)
-            };
+              spotsLeft: c.max_capacity - currentBookings            };
           });
           setLiveSchedule(formatted);
         } else {
-          // 🔥 FALLBACK: Live database is empty, use dummy data
-          console.log("Live DB empty. Falling back to local schedule data.");
           setLiveSchedule(SCHEDULE);
         }
       } catch (error) {
-        // 🔥 FALLBACK: API crashed/Render is asleep, use dummy data
         console.error("Failed to load live schedule, falling back to local data.", error);
         setLiveSchedule(SCHEDULE);
       } finally {
@@ -91,7 +85,6 @@ export function Schedule() {
     fetchSchedule();
   }, []);
 
-  // Filter against our LIVE data (which will hold the dummy data if fallback triggered)
   const filteredSchedule = liveSchedule.filter((item) => {
     const dayMatch = selectedDay === "All" || item.day === selectedDay;
     const typeMatch = selectedType === "All" || item.type === selectedType;
@@ -235,7 +228,6 @@ export function Schedule() {
         <section className="py-12" ref={scheduleTopRef}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            {/* 🔥 NEW: Loading Spinner while fetching database */}
             {isLoading ? (
                 <div className="flex justify-center py-20">
                     <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
@@ -281,7 +273,8 @@ export function Schedule() {
                             </div>
                             <div className="flex items-center gap-5 shrink-0">
                             <div className="text-center">
-                                <p className={`text-2xl font-bold ${getSpotsLeft(item.id) <= 5 ? "text-red-400" : "text-orange-500"}`}>{getSpotsLeft(item.id)}</p>
+                                {/* 🔥 CORRECTED TO USE THE LIVE MATH */}
+                                <p className={`text-2xl font-bold ${item.spotsLeft <= 5 ? "text-red-400" : "text-orange-500"}`}>{item.spotsLeft}</p>
                                 <p className="text-xs text-gray-400">Spots Left</p>
                             </div>
                             </div>

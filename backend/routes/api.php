@@ -258,3 +258,19 @@ Route::get('/debug/check-bookings', function () {
         '5_class_details' => $matchingClass
     ]);
 });
+
+Route::get('/debug/set-capacity-default', function () {
+    try {
+        // 1. Tell PostgreSQL to default to 25 for any future classes
+        \Illuminate\Support\Facades\DB::statement('ALTER TABLE gym_classes ALTER COLUMN max_capacity SET DEFAULT 25');
+        
+        // 2. Find any existing classes that accidentally have an empty (NULL) capacity and fix them
+        \Illuminate\Support\Facades\DB::statement('UPDATE gym_classes SET max_capacity = 25 WHERE max_capacity IS NULL');
+
+        return response()->json([
+            'status' => 'SUCCESS! The database is now strictly handling the 25 max capacity default.'
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});

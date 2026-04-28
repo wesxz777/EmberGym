@@ -25,7 +25,7 @@ import {
   PLAN_WEEKLY_LIMITS,
   canPlanAccessClass,
   ScheduleItem,
-  SCHEDULE, // 🔥 NEW: Importing your local dummy schedules
+  SCHEDULE, 
 } from "../data/gymDatabase";
 import api from "../../config/api";
 
@@ -36,6 +36,9 @@ interface Props {
   onClose: () => void;
   source: BookingSource | null;
 }
+
+const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
 /* ─── Plan badge helper ────────────────────────────────────────────────────── */
 function PlanBadge({ plan }: { plan: string }) {
@@ -65,16 +68,16 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   const { addBooking, removeBooking, isBooked, getBookingBySchedule, weeklyCount, getSpotsLeft } = useBookings();
 
   const [selectedSlot, setSelectedSlot] = useState<ScheduleItem | null>(null);
-  const [step, setStep] = useState<"pick" | "confirm" | "success" | "cancel">("pick");
-
-  const [liveSlots, setLiveSlots] = useState<ScheduleItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  // 🔥 NEW: Added "error" to the step state
+  const [step, setStep] = useState<"pick" | "confirm" | "success" | "cancel" | "error">("pick");
+  const [errorMessage, setErrorMessage] = useState("");
 
   /* Reset on open */
   useEffect(() => {
     if (isOpen) {
       setStep("pick");
       setSelectedSlot(null);
+      setErrorMessage("");
     }
   }, [isOpen, source]);
 
@@ -98,7 +101,6 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
             c.template?.name === classData.name || c.name === classData.name
           );
           
-          // 🔥 HYBRID LOGIC: Check if the live API has data
           if (slotsForThisClass.length > 0) {
             const formattedSlots = slotsForThisClass.map((c: any) => {
               const dateObj = new Date(c.class_date);
@@ -116,14 +118,12 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
             });
             setLiveSlots(formattedSlots);
           } else {
-            // 🔥 FALLBACK: Live database is empty, use dummy data from gymDatabase.tsx
             console.log("Live DB empty. Falling back to local schedule data.");
             const localFallbackSlots = SCHEDULE.filter(s => s.className === classData.name);
             setLiveSlots(localFallbackSlots);
           }
         })
         .catch(err => {
-          // 🔥 FALLBACK: API crashed/Render is asleep, use dummy data
           console.error("Failed to fetch live slots. Falling back to local data.", err);
           const localFallbackSlots = SCHEDULE.filter(s => s.className === classData.name);
           setLiveSlots(localFallbackSlots);
@@ -183,9 +183,16 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
         window.dispatchEvent(new Event("refresh-notifications"));
         setStep("success");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Booking failed to save to database:", error);
-      alert("Failed to confirm booking. Check the console for details.");
+      
+      // 🔥 NEW: Catch the 403 Membership Error and switch to the error UI
+      if (error.response && error.response.status === 403) {
+        setErrorMessage(error.response.data.error || "You must have an active membership to book.");
+        setStep("error"); 
+      } else {
+        alert("Failed to confirm booking. Please try again.");
+      }
     } finally {
       setIsSubmitting(false); 
     }
@@ -237,8 +244,10 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
 
               <div className="flex items-center justify-between px-6 py-4 border-b border-orange-500/10">
                 <h2 className="font-bold text-white text-lg">
+                  {/* 🔥 UPDATED TITLE LOGIC */}
                   {step === "success" ? "Booking Confirmed!" :
                    step === "cancel"  ? "Booking Cancelled" :
+                   step === "error"   ? "Action Required" :
                    slotAlreadyBooked  ? "Manage Booking" :
                    "Book a Class"}
                 </h2>
@@ -311,7 +320,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       </div>
                     )}
 
-                    {plan === "Basic" && planAllowed && !slotAlreadyBooked && (
+                    {plan === "Basic" && planAllowed && !slotAlreadyBooked && step !== "error" && (
                       <div className="bg-gray-900 rounded-xl p-3 mb-4">
                         <div className="flex justify-between text-xs text-gray-400 mb-1.5">
                           <span>Weekly bookings used</span>
@@ -338,7 +347,25 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       </motion.div>
                     )}
 
-                    {step !== "success" && step !== "cancel" && slotAlreadyBooked && activeSlot && (
+                    {/* 🔥 THE NEW ERROR STATE MODAL */}
+                    {step === "error" && (
+                      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="rounded-xl p-5 text-center mb-4 bg-red-500/10 border border-red-500/20">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 bg-red-500/20">
+                          <AlertTriangle className="w-6 h-6 text-red-400" />
+                        </div>
+                        <p className="font-semibold text-white mb-1">Membership Required</p>
+                        <p className="text-sm text-red-400/80">{errorMessage}</p>
+                        
+                        <div className="flex gap-3 mt-5">
+                            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-400 hover:bg-gray-800 text-sm font-medium transition-colors">Close</button>
+                            <Link to="/membership" onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-red-600 font-semibold text-sm hover:shadow-lg hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-2 text-white">
+                                Get Membership
+                            </Link>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {step !== "success" && step !== "cancel" && step !== "error" && slotAlreadyBooked && activeSlot && (
                       <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mb-4">
                         <div className="flex items-center gap-3">
                           <div className="bg-green-500/20 p-2 rounded-lg"><Check className="w-4 h-4 text-green-400" /></div>
@@ -359,8 +386,8 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                           ) : availableSlots.length === 0 ? (
                             <p className="text-sm text-orange-400 text-center py-4">No classes scheduled right now. Check back later!</p>
                           ) : (
-                            availableSlots.map((slot) => {
-                              const booked = isBooked(slot.id);
+                              availableSlots.map((slot: ScheduleItem) => {
+                                const booked = isBooked(slot.id);
                               const isSelected = selectedSlot?.id === slot.id;
                               return (
                                 <button

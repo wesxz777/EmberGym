@@ -5,7 +5,7 @@ import api from "../../config/api";
 
 export interface Booking {
   bookingId: string;      // unique
-  scheduleId: number;     // references SCHEDULE[].id
+  scheduleId: number;     // references live db id
   classId: number;        // references CLASSES[].id
   className: string;
   type: string;
@@ -22,11 +22,7 @@ interface BookingContextType {
   removeBooking: (bookingId: string) => void;
   isBooked: (scheduleId: number) => boolean;
   getBookingBySchedule: (scheduleId: number) => Booking | undefined;
-  weeklyCount: number;
-  /** Live spots left for a specific schedule slot */
-  getSpotsLeft: (scheduleId: number) => number;
-  /** Min spots left across all schedule slots for a given class (for Classes page) */
-  getClassMinSpots: (classId: number) => number;
+  monthlyCount: number; // 🔥 UPDATED: Tracks monthly bookings instead of weekly
   isLoadingBookings: boolean;
 }
 
@@ -35,27 +31,21 @@ const BookingContext = createContext<BookingContextType | undefined>(undefined);
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoadingBookings, setIsLoadingBookings] = useState(true);
-  const { isLoggedIn } = useAuth(); // Grab the login status
+  const { isLoggedIn } = useAuth();
 
-  // --- THE DATA FETCHER ---
   useEffect(() => {
     const fetchBookings = async () => {
       if (!isLoggedIn) {
         setBookings([]);
-        setIsLoadingBookings(false); // <-- Stop loading if logged out
+        setIsLoadingBookings(false);
         return;
       }
 
-      setIsLoadingBookings(true); // <-- Start loading
+      setIsLoadingBookings(true);
       try {
-        // 1. FIXED URL: Removed the extra /api/ so it doesn't double up!
-        const response = await api.get('/api/my-bookings');   
-             
-        // 2. THE SAFETY SHIELD: Ensure we actually got an array back from Laravel
-        // If it's not an array (like an error object or empty string), force it to be an empty array []
+        const response = await api.get('/api/my-bookings');        
         const dbBookings = Array.isArray(response.data) ? response.data : [];
 
-        // Now .map() will NEVER crash!
         const formattedBookings: Booking[] = dbBookings.map((dbBooking: any) => {
           const classInfo = CLASSES.find(c => c.name === dbBooking.class_name);
           const scheduleInfo = SCHEDULE.find(s => s.id === dbBooking.schedule_id);
@@ -76,16 +66,15 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
         setBookings(formattedBookings);
       } catch (error) {
-        // If it still fails, it logs safely without exploding the screen
         console.error("Failed to fetch schedule from database:", error);
-        setBookings([]); // Fallback to empty array on error
+        setBookings([]); 
       } finally {
         setIsLoadingBookings(false); 
       }
     };
 
     fetchBookings();
-  }, [isLoggedIn]); // This hook runs every time login status changes
+  }, [isLoggedIn]);
 
   const addBooking = (b: Omit<Booking, "bookingId">) => {
     const bookingId = `bk-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
@@ -96,31 +85,16 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     setBookings((prev) => prev.filter((b) => b.bookingId !== bookingId));
   };
 
-  const isBooked = (scheduleId: number) =>
-    bookings.some((b) => b.scheduleId === scheduleId);
+  const isBooked = (scheduleId: number) => bookings.some((b) => b.scheduleId === scheduleId);
+  const getBookingBySchedule = (scheduleId: number) => bookings.find((b) => b.scheduleId === scheduleId);
 
-  const getBookingBySchedule = (scheduleId: number) =>
-    bookings.find((b) => b.scheduleId === scheduleId);
-
-  const weeklyCount = bookings.length;
-
-  const getSpotsLeft = (scheduleId: number): number => {
-    const slot = SCHEDULE.find((s) => s.id === scheduleId);
-    if (!slot) return 0;
-    return slot.spotsLeft - (isBooked(scheduleId) ? 1 : 0);
-  };
-
-  const getClassMinSpots = (classId: number): number => {
-    const cls = CLASSES.find((c) => c.id === classId);
-    if (!cls) return 0;
-    const slots = SCHEDULE.filter((s) => s.className === cls.name);
-    if (slots.length === 0) return 0;
-    return Math.min(...slots.map((s) => getSpotsLeft(s.id)));
-  };
+  // 🔥 NEW: Monthly limit tracker
+  const monthlyCount = bookings.length;
 
   return (
     <BookingContext.Provider
-value={{ bookings, addBooking, removeBooking, isBooked, getBookingBySchedule, weeklyCount, getSpotsLeft, getClassMinSpots, isLoadingBookings }}    >
+      value={{ bookings, addBooking, removeBooking, isBooked, getBookingBySchedule, monthlyCount, isLoadingBookings }}
+    >
       {children}
     </BookingContext.Provider>
   );

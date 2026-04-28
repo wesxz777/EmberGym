@@ -62,8 +62,8 @@ function PlanBadge({ plan }: { plan: string }) {
 export function BookingModal({ isOpen, onClose, source }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { isLoggedIn, user } = useAuth();
-  const { addBooking, removeBooking, isBooked, getBookingBySchedule, weeklyCount, getSpotsLeft } = useBookings();
-
+const { addBooking, removeBooking, isBooked, getBookingBySchedule, monthlyCount } = useBookings();
+  
   const [selectedSlot, setSelectedSlot] = useState<ScheduleItem | null>(null);
   
   // 🔥 FIXED: These states are now safely inside the component body!
@@ -141,7 +141,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
   /* ─── Membership gate checks ──────────────────────────────────────────── */
   const plan = user?.membership ?? "Basic";
   const weeklyLimit = PLAN_WEEKLY_LIMITS[plan] ?? 2;
-  const atWeeklyLimit = weeklyCount >= weeklyLimit;
+  const atWeeklyLimit = monthlyCount >= weeklyLimit;
   const planAllowed = classData ? canPlanAccessClass(plan, classData) : false;
   const slotAlreadyBooked = activeSlot ? isBooked(activeSlot.id) : false;
   const existingBooking = activeSlot ? getBookingBySchedule(activeSlot.id) : undefined;
@@ -323,10 +323,10 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                       <div className="bg-gray-900 rounded-xl p-3 mb-4">
                         <div className="flex justify-between text-xs text-gray-400 mb-1.5">
                           <span>Weekly bookings used</span>
-                          <span className={weeklyCount >= 2 ? "text-red-400 font-semibold" : "text-orange-400"}>{weeklyCount} / {weeklyLimit}</span>
+                          <span className={monthlyCount >= 2 ? "text-red-400 font-semibold" : "text-orange-400"}>{monthlyCount} / {weeklyLimit}</span>
                         </div>
                         <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                          <div className={`h-full rounded-full transition-all ${weeklyCount >= 2 ? "bg-red-500" : "bg-gradient-to-r from-orange-500 to-red-500"}`} style={{ width: `${Math.min((weeklyCount / weeklyLimit) * 100, 100)}%` }} />
+                          <div className={`h-full rounded-full transition-all ${monthlyCount >= 2 ? "bg-red-500" : "bg-gradient-to-r from-orange-500 to-red-500"}`} style={{ width: `${Math.min((monthlyCount / weeklyLimit) * 100, 100)}%` }} />
                         </div>
                       </div>
                     )}
@@ -408,7 +408,7 @@ export function BookingModal({ isOpen, onClose, source }: Props) {
                                       </div>
                                     </div>
                                     {booked && <span className="text-xs text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">Booked</span>}
-                                    {!booked && <span className="text-xs text-gray-500">{getSpotsLeft(slot.id)} spots</span>}
+{!booked && <span className="text-xs text-gray-500">{slot.spotsLeft} spots</span>}
                                   </div>
                                 </button>
                               );

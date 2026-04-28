@@ -5,11 +5,18 @@ import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useBookings } from "../context/BookingContext";
 import { BookingModal, BookingSource } from "../components/BookingModal";
-import { CLASSES, SCHEDULE, PLAN_WEEKLY_LIMITS, canPlanAccessClass } from "../data/gymDatabase";
+import { CLASSES, SCHEDULE } from "../data/gymDatabase";
+
+// 🔥 NEW: The Monthly Limits Dictionary
+const PLAN_MONTHLY_LIMITS: Record<string, number> = {
+  Basic: 4,
+  Pro: 6,
+  Elite: 8
+};
 
 export function Classes() {
   const { isLoggedIn, user } = useAuth();
-  const { isBooked, weeklyCount, getClassMinSpots } = useBookings();
+  const { isBooked, monthlyCount } = useBookings(); // Using the new monthly tracker
 
   const [selectedType, setSelectedType] = useState<string>("All");
   const [selectedIntensity, setSelectedIntensity] = useState<string>("All");
@@ -26,8 +33,9 @@ export function Classes() {
     return typeMatch && intensityMatch;
   });
 
+  // 🔥 Establish current plan and limits
   const plan = user?.membership ?? "Basic";
-  const weeklyLimit = PLAN_WEEKLY_LIMITS[plan] ?? 2;
+  const monthlyLimit = PLAN_MONTHLY_LIMITS[plan] ?? 4;
 
   const getIntensityIcon = (intensity: string) => {
     if (intensity === "Low") return Heart;
@@ -41,7 +49,6 @@ export function Classes() {
     return "text-red-400";
   };
 
-  /** How many slots for this class are already booked */
   const classBookedCount = (classId: number) => {
     const cls = CLASSES.find((c) => c.id === classId);
     if (!cls) return 0;
@@ -53,15 +60,13 @@ export function Classes() {
     setModalOpen(true);
   };
 
-  /** Determine button state for a class card */
+  /** 🔥 CLEANED UP BUTTON STATE: Only cares about monthly quotas now */
   const getButtonState = (classId: number) => {
-    const cls = CLASSES.find((c) => c.id === classId)!;
     const booked = classBookedCount(classId) > 0;
 
     if (!isLoggedIn) return { type: "login" as const };
     if (booked) return { type: "booked" as const };
-    if (!canPlanAccessClass(plan, cls)) return { type: "upgrade" as const };
-    if (plan === "Basic" && weeklyCount >= weeklyLimit) return { type: "limit" as const };
+    if (monthlyCount >= monthlyLimit) return { type: "limit" as const };
     return { type: "book" as const };
   };
 
@@ -77,20 +82,21 @@ export function Classes() {
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
               From high-intensity training to relaxing yoga, find the perfect class to match your fitness goals.
             </p>
-            {/* Membership usage bar — only for logged-in Basic members */}
-            {isLoggedIn && plan === "Basic" && (
+            
+            {/* 🔥 UPDATED: Membership usage bar now shows for ALL plans */}
+            {isLoggedIn && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-6 inline-flex flex-col items-center gap-2 bg-gray-900/80 border border-orange-500/20 rounded-2xl px-6 py-3"
               >
                 <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <Dumbbell className="w-4 h-4 text-orange-500" />
-                  <span>Basic Plan — </span>
-                  <span className={weeklyCount >= 2 ? "text-red-400 font-semibold" : "text-orange-400 font-semibold"}>
-                    {weeklyCount} / {weeklyLimit} weekly bookings used
+                  {plan === "Elite" ? <Crown className="w-4 h-4 text-yellow-500" /> : <Dumbbell className="w-4 h-4 text-orange-500" />}
+                  <span>{plan} Plan — </span>
+                  <span className={monthlyCount >= monthlyLimit ? "text-red-400 font-semibold" : "text-orange-400 font-semibold"}>
+                    {monthlyCount} / {monthlyLimit} monthly bookings used
                   </span>
-                  {weeklyCount < weeklyLimit && (
+                  {monthlyCount >= monthlyLimit && plan !== "Elite" && (
                     <Link to="/membership" className="text-xs text-gray-500 hover:text-orange-400 transition-colors ml-1">
                       Upgrade →
                     </Link>
@@ -98,8 +104,8 @@ export function Classes() {
                 </div>
                 <div className="w-48 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${weeklyCount >= 2 ? "bg-red-500" : "bg-gradient-to-r from-orange-500 to-red-500"}`}
-                    style={{ width: `${Math.min((weeklyCount / weeklyLimit) * 100, 100)}%` }}
+                    className={`h-full rounded-full transition-all ${monthlyCount >= monthlyLimit ? "bg-red-500" : "bg-gradient-to-r from-orange-500 to-red-500"}`}
+                    style={{ width: `${Math.min((monthlyCount / monthlyLimit) * 100, 100)}%` }}
                   />
                 </div>
               </motion.div>
@@ -111,8 +117,6 @@ export function Classes() {
       {/* Filters */}
       <section className="sticky top-20 z-40 bg-black/95 backdrop-blur-sm border-b border-orange-500/20 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-4">
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-400">Class Type</label>
@@ -176,7 +180,6 @@ export function Classes() {
             {filteredClasses.map((classItem, index) => {
               const IntensityIcon = getIntensityIcon(classItem.intensity);
               const btnState = getButtonState(classItem.id);
-              const planAllowed = canPlanAccessClass(plan, classItem);
               const isClassBooked = classBookedCount(classItem.id) > 0;
 
               return (
@@ -196,24 +199,14 @@ export function Classes() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
 
-                    {/* Type badge */}
                     <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-medium">
                       {classItem.type}
                     </div>
 
-                    {/* "Booked" ribbon */}
                     {isClassBooked && (
                       <div className="absolute top-3 left-3 bg-green-600/90 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                         <Check className="w-3 h-3" />
                         Booked
-                      </div>
-                    )}
-
-                    {/* Plan lock indicator for logged-in users with wrong plan */}
-                    {isLoggedIn && !planAllowed && (
-                      <div className="absolute bottom-3 left-3 bg-black/80 backdrop-blur-sm px-2.5 py-1 rounded-full text-xs text-yellow-400 font-medium flex items-center gap-1">
-                        <Crown className="w-3 h-3" />
-                        {classItem.allowedPlans[0]}+ required
                       </div>
                     )}
                   </div>
@@ -241,18 +234,6 @@ export function Classes() {
                         </div>
                         <span className="text-gray-400 text-xs">{classItem.instructor}</span>
                       </div>
-                      {/* Live spots indicator */}
-                      {(() => {
-                        const minSpots = getClassMinSpots(classItem.id);
-                        return (
-                          <div className="flex items-center justify-between text-sm pt-1 border-t border-gray-800/60">
-                            <span className="text-gray-500 text-xs">Best availability</span>
-                            <span className={`text-xs font-semibold ${minSpots <= 5 ? "text-red-400" : minSpots <= 10 ? "text-yellow-400" : "text-green-400"}`}>
-                              {minSpots <= 5 ? "⚡ " : ""}{minSpots} spot{minSpots !== 1 ? "s" : ""} left
-                            </span>
-                          </div>
-                        );
-                      })()}
                     </div>
 
                     <div className="mb-4">
@@ -268,7 +249,7 @@ export function Classes() {
                       </div>
                     </div>
 
-                    {/* ── BOOK BUTTON — varies by state ── */}
+                    {/* ── BOOK BUTTON ── */}
                     {btnState.type === "login" && (
                       <button
                         onClick={() => openBooking(classItem.id)}
@@ -289,23 +270,13 @@ export function Classes() {
                       </button>
                     )}
 
-                    {btnState.type === "upgrade" && (
-                      <Link
-                        to="/membership"
-                        className="w-full flex items-center justify-center gap-2 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/20 py-2.5 rounded-lg font-semibold text-sm text-yellow-400 transition-all"
-                      >
-                        <Crown className="w-4 h-4" />
-                        Upgrade to Book
-                      </Link>
-                    )}
-
                     {btnState.type === "limit" && (
                       <button
                         onClick={() => openBooking(classItem.id)}
                         className="w-full flex items-center justify-center gap-2 bg-gray-800 border border-gray-700 py-2.5 rounded-lg font-semibold text-sm text-gray-500 cursor-not-allowed"
                         disabled
                       >
-                        Weekly Limit Reached
+                        Monthly Limit Reached
                       </button>
                     )}
 

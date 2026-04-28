@@ -12,6 +12,7 @@ use App\Notifications\PaymentSuccessful;
 use App\Notifications\MembershipCancelled;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use App\Notifications\BookingsDroppedNotification;
 
 class PaymentController
 {
@@ -186,12 +187,21 @@ class PaymentController
                 'membership_expires_at' => null,
             ]);
 
-            // 🔥 CASCADE CANCELLATION: Wipe all their class bookings!
-            // This instantly frees up the spots for paying members
+            // 🔥 CASCADE CANCELLATION UPGRADE
+            // 1. Count how many bookings they have right now
+            $bookingCount = \App\Models\ContactBooking::where('user_id', $user->id)->count();
+
+            // 2. Wipe all their class bookings
             \App\Models\ContactBooking::where('user_id', $user->id)->delete();
 
+            // 3. Send the standard membership cancellation notification
             $user->notify(new MembershipCancelled($planName));
 
+            // 4. Send the new dropped bookings notification ONLY if they actually lost classes
+            if ($bookingCount > 0) {
+                $user->notify(new BookingsDroppedNotification($bookingCount));
+            }
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Your membership plan has been cancelled successfully.',

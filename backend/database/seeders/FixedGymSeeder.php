@@ -96,14 +96,14 @@ class FixedGymSeeder extends Seeder
             $endTime = Carbon::parse($slot['time'])->addMinutes($templates[$slot['name']]->duration)->format('H:i');
 
             GymClass::create([
-                'name' => $slot['name'], // 🔥 PUTTING THIS BACK! I'm sorry!
+                'name' => $slot['name'],
                 'class_template_id' => $templates[$slot['name']]->id,
                 'trainer_id' => $trainer->id,
                 'room' => $slot['room'],
                 'class_date' => $date,
                 'start_time' => $slot['time'],
                 'end_time' => $endTime,
-                'max_capacity' => $slot['capacity'],
+                'max_capacity' => 25, // 🔥 STRICTLY ENFORCE 25 FOR ALL SEEDED CLASSES
             ]);
         }
     }

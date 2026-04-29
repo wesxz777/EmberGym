@@ -37,7 +37,7 @@ HOURS: M-F 5AM-10PM, Sat 6AM-9PM, Sun 7AM-8PM.
 PHONE: (555) 123-4567. 
 EMAIL: emergym@gmail.com
 
-MEMBERSHIPS: Basic ₱999 (2 classes/week), Pro ₱1,499 (unlimited), Elite ₱1,999 (unlimited + 24/7)
+MEMBERSHIPS: Basic ₱999 (4 classes/week), Pro ₱1,499 (6 classes/week), Elite ₱1,999 (8 classes/week + 24/7)
 
 CLASSES: Power Yoga, HIIT Blast, Strength Builder, Cardio Cycling, Core Pilates, Boxing, CrossFit, Zumba
 PROMPT;

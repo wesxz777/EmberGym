@@ -169,7 +169,11 @@ const { addBooking, removeBooking, isBooked, getBookingBySchedule, monthlyCount 
       const response = await api.post("/api/contact-bookings", payload);
 
       if (response.status === 200 || response.status === 201) {
+        // 🔥 Grab the real ID from the Laravel response
+        const realBookingId = response.data.booking_id.toString();
+
         addBooking({
+          bookingId: realBookingId, // 🔥 Pass it into the context
           scheduleId: activeSlot.id,
           classId: classData.id,
           className: activeSlot.className,
@@ -180,7 +184,7 @@ const { addBooking, removeBooking, isBooked, getBookingBySchedule, monthlyCount 
           duration: activeSlot.duration,
           room: activeSlot.room,
         });
-
+        
         window.dispatchEvent(new Event("refresh-notifications"));
         setStep("success");
       }

@@ -45,9 +45,12 @@ class ContactBookingController extends Controller
         // Trigger notification
         $user->notify(new BookingConfirmed($booking->class_name, $booking->schedule_time));
 
-        return response()->json(['message' => 'Booking successful']);
+       return response()->json([
+            'message' => 'Booking successful',
+            'booking_id' => $booking->id // 🔥 Send the real database ID back to React!
+        ]);
     }
-
+    
     public function index()
     {
         return response()->json(ContactBooking::latest()->get());

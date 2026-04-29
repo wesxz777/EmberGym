@@ -4,7 +4,7 @@ import { SCHEDULE, CLASSES } from "../data/gymDatabase";
 import api from "../../config/api";
 
 export interface Booking {
-  bookingId: string;      // unique
+  bookingId: string;      // unique database ID for this booking (not the same as scheduleId)
   scheduleId: number;     // references live db id
   classId: number;        // references CLASSES[].id
   className: string;
@@ -18,7 +18,7 @@ export interface Booking {
 
 interface BookingContextType {
   bookings: Booking[];
-  addBooking: (b: Omit<Booking, "bookingId">) => void;
+  addBooking: (b: Booking) => void;
   removeBooking: (bookingId: string) => void;
   isBooked: (scheduleId: number) => boolean;
   getBookingBySchedule: (scheduleId: number) => Booking | undefined;
@@ -76,9 +76,9 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     fetchBookings();
   }, [isLoggedIn]);
 
-  const addBooking = (b: Omit<Booking, "bookingId">) => {
-    const bookingId = `bk-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-    setBookings((prev) => [...prev, { ...b, bookingId }]);
+  // 🔥 Now requires the full Booking object WITH the real database ID
+  const addBooking = (b: Booking) => {
+    setBookings((prev) => [...prev, b]);
   };
 
   const removeBooking = (bookingId: string) => {

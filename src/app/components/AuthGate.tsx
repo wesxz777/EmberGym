@@ -96,9 +96,6 @@ export function AuthGate({
             </Link>
           </div>
 
-          <p className="text-xs text-gray-500 mt-5">
-            Free 7-day trial · No credit card required
-          </p>
         </motion.div>
       </div>
     </div>

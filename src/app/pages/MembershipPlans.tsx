@@ -40,7 +40,7 @@ export function MembershipPlans() {
       features: [
         { text: "Access to gym equipment", included: true },
         { text: "Locker room access", included: true },
-        { text: "2 group classes per month", included: true },
+        { text: "4 group classes per month", included: true },
         { text: "Personal training sessions", included: false },
         { text: "Nutritional guidance", included: false },
         { text: "Free guest passes", included: false },
@@ -58,7 +58,7 @@ export function MembershipPlans() {
       features: [
         { text: "Access to gym equipment", included: true },
         { text: "Locker room access", included: true },
-        { text: "Unlimited group classes", included: true },
+        { text: "6 group classes per month", included: true },
         { text: "2 personal training sessions/month", included: true },
         { text: "Nutritional guidance", included: true },
         { text: "2 free guest passes per month", included: true },
@@ -75,7 +75,7 @@ export function MembershipPlans() {
       features: [
         { text: "Access to gym equipment", included: true },
         { text: "Locker room access", included: true },
-        { text: "Unlimited group classes", included: true },
+        { text: "8 group classes per month", included: true },
         { text: "4 personal training sessions/month", included: true },
         { text: "Nutritional guidance", included: true },
         { text: "Unlimited guest passes", included: true },
@@ -335,8 +335,8 @@ export function MembershipPlans() {
                 a: "Yes! We offer 15% off for students with valid ID and 20% off for seniors 65+.",
               },
               {
-                q: "What's included in the free trial?",
-                a: "Your free trial includes full access to all gym facilities, group classes, and one complimentary personal training session.",
+                q: "What's included in the free plan",
+                a: "Your free plan includes full access to all gym facilities",
               },
               {
                 q: "Can I upgrade or downgrade my plan?",

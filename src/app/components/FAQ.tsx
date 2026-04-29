@@ -13,10 +13,6 @@ export function FAQ() {
 
   const faqItems: FAQItem[] = [
     {
-      question: "What's included in the free 7-day trial?",
-      answer: "Your free 7-day trial includes full access to all gym equipment, group classes, locker rooms, and amenities. You'll also get a complimentary fitness assessment and personalized workout plan from one of our expert trainers.",
-    },
-    {
       question: "Can I cancel my membership anytime?",
       answer: "Yes! We offer flexible month-to-month memberships with no long-term contracts. You can cancel anytime with 30 days notice. We believe in earning your membership every single month.",
     },
